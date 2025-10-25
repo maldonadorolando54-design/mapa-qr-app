@@ -5,11 +5,11 @@ import os
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Mapa + QR Composer", layout="centered")
-st.title("🗺️ Mapa + QR — Composición centrada en A4")
+st.title("🗺️ Mapa + QR — Mitad superior de hoja A4")
 
 st.markdown("""
 Sube **el mapa** (imagen) y **el QR** (imagen).  
-Esta versión coloca ambos **centrados dentro de una hoja A4** (210 × 297 mm).  
+La app colocará el título, QR y mapa **centrados horizontalmente en la mitad superior de una hoja A4**.
 """)
 
 # --- INTERFAZ DE CARGA ---
@@ -42,10 +42,11 @@ def load_image(file):
     img = Image.open(file).convert("RGBA")
     return img
 
-def compose_centered_A4(map_img, qr_img, title_text, bg_hex="#ffffff", map_max_w=900,
-                        qr_px=200, margin_px=40, font_size=40, dpi=300):
-    """Compone mapa + QR + título centrados en un lienzo A4."""
-    # Tamaño A4 a la resolución elegida
+def compose_top_half_A4(map_img, qr_img, title_text, bg_hex="#ffffff",
+                        map_max_w=900, qr_px=200, margin_px=40,
+                        font_size=40, dpi=300):
+    """Compone mapa + QR + título centrados en la mitad superior de una hoja A4."""
+    # Tamaño A4 en píxeles (vertical)
     a4_w_px = int(8.27 * dpi)  # 210 mm
     a4_h_px = int(11.69 * dpi)  # 297 mm
 
@@ -78,13 +79,15 @@ def compose_centered_A4(map_img, qr_img, title_text, bg_hex="#ffffff", map_max_w
     canvas = Image.new("RGBA", (a4_w_px, a4_h_px), bg_hex)
     draw = ImageDraw.Draw(canvas)
 
-    # Calcular bloque total (título + QR + mapa)
+    # Bloque de contenido (título + QR + mapa)
     block_w = max(map_w, qr_px, text_w) + 2 * margin_px
     block_h = text_h + qr_px + map_h + 4 * margin_px
 
-    # Posición superior izquierda del bloque centrado
+    # Posicionar bloque en la mitad superior
+    # (centrado horizontalmente, pero desplazado hacia arriba)
     start_x = (a4_w_px - block_w) // 2
-    start_y = (a4_h_px - block_h) // 2
+    # dejamos 1/8 del alto A4 como margen superior
+    start_y = int(a4_h_px * 0.1)
 
     # Dibujar título
     title_x = start_x + (block_w - text_w) // 2
@@ -118,7 +121,7 @@ if map_file is not None and qr_file is not None:
     if name.strip() == "":
         name = os.path.splitext(map_file.name)[0] if map_file else "Sin nombre"
 
-    final_img = compose_centered_A4(
+    final_img = compose_top_half_A4(
         map_img=map_img,
         qr_img=qr_img,
         title_text=name,
@@ -130,7 +133,7 @@ if map_file is not None and qr_file is not None:
         dpi=dpi
     )
 
-    st.subheader("🖼️ Previsualización (centrado en hoja A4):")
+    st.subheader("🖼️ Previsualización (mitad superior de hoja A4):")
     st.image(final_img, use_column_width=True)
 
     # Descargar PNG
@@ -140,7 +143,7 @@ if map_file is not None and qr_file is not None:
     st.download_button(
         "📥 Descargar PNG",
         data=buf,
-        file_name=f"{name}_A4.png",
+        file_name=f"{name}_A4_top.png",
         mime="image/png"
     )
 
@@ -149,11 +152,10 @@ if map_file is not None and qr_file is not None:
     final_img.save(buf_pdf, format="PDF")
     buf_pdf.seek(0)
     st.download_button(
-        "📄 Descargar PDF (A4)",
+        "📄 Descargar PDF (A4 mitad superior)",
         data=buf_pdf,
-        file_name=f"{name}_A4.pdf",
+        file_name=f"{name}_A4_top.pdf",
         mime="application/pdf"
     )
 else:
-    st.info("Sube ambos archivos (mapa y QR) para generar la composición centrada en una hoja A4.")
-
+    st.info("Sube ambos archivos (mapa y QR) para generar la composición en la mitad superior de una hoja A4.")
