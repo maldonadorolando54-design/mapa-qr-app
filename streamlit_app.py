@@ -3,22 +3,24 @@ from PIL import Image, ImageDraw, ImageFont
 import io, os
 
 # --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="Mapa + QR (Mapa más abajo)", layout="centered")
-st.title("🗺️ Mapa + QR — Estilo Institucional (Mapa más abajo)")
+st.set_page_config(page_title="Mapa + QR (Diseño final)", layout="centered")
+st.title("🗺️ Mapa + QR — Estilo Institucional Final")
 
 st.markdown("""
-Crea una hoja **A4 vertical** con:
-- Título y subtítulo arriba  
+**Genera una hoja A4 profesional con:**
+- Título y subtítulo arriba a la izquierda  
 - Línea divisoria  
-- QR más abajo a la izquierda  
-- **Mapa un poco más abajo**, alineado a la derecha  
+- **QR a la izquierda**  
+- **Mapa a la derecha**, más abajo (como en ejemplo real)  
+- Todo contenido en la mitad superior del A4
 """)
 
+# 🟢 Invertimos el orden: QR primero, Mapa después
 col1, col2 = st.columns(2)
 with col1:
-    map_file = st.file_uploader("🗺️ Sube la imagen del mapa", type=["png", "jpg", "jpeg"])
-with col2:
     qr_file = st.file_uploader("🔳 Sube la imagen del QR", type=["png", "jpg", "jpeg"])
+with col2:
+    map_file = st.file_uploader("🗺️ Sube la imagen del mapa", type=["png", "jpg", "jpeg"])
 
 default_name = ""
 if map_file is not None:
@@ -45,7 +47,7 @@ def compose_institutional_layout(map_img, qr_img, title, subtitle,
                                  bg="#ffffff", font_title=70, font_sub=36,
                                  qr_px=250, margin_px=80, extra_space=120,
                                  map_offset_y=150, dpi=300):
-    """Diseño institucional con mapa más abajo."""
+    """Diseño institucional con QR a la izquierda y mapa a la derecha."""
     a4_w_px = int(8.27 * dpi)
     a4_h_px = int(11.69 * dpi)
 
@@ -88,7 +90,7 @@ def compose_institutional_layout(map_img, qr_img, title, subtitle,
     left_x = margin_px
     right_x = left_x + qr_px + margin_px
 
-    # Título
+    # Título y subtítulo
     draw.text((left_x, content_top), title, fill=(0,0,0), font=font_bold)
     subtitle_y = content_top + title_h + 10
     draw.text((left_x, subtitle_y), subtitle, fill=(80,80,80), font=font_subt)
@@ -97,11 +99,11 @@ def compose_institutional_layout(map_img, qr_img, title, subtitle,
     line_y = subtitle_y + sub_h + 20
     draw.line((left_x, line_y, a4_w_px - margin_px, line_y), fill=(180,180,180), width=3)
 
-    # QR más abajo
+    # QR (a la izquierda)
     qr_y = line_y + extra_space
     canvas.paste(qr_img, (left_x, qr_y), qr_img)
 
-    # Mapa más abajo
+    # Mapa (a la derecha y más abajo)
     map_y = content_top + map_offset_y
     canvas.paste(map_img, (right_x, map_y), map_img)
 
@@ -143,4 +145,4 @@ if map_file and qr_file:
     buf_pdf.seek(0)
     st.download_button("📄 Descargar PDF", buf_pdf, f"{name}_A4_institucional.pdf", "application/pdf")
 else:
-    st.info("Sube el mapa y el QR para generar el diseño institucional.")
+    st.info("Sube primero el QR y luego el mapa para generar el diseño.")
