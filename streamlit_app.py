@@ -2,16 +2,18 @@ import streamlit as st
 from PIL import Image, ImageDraw, ImageFont
 import io, os
 
-# --- CONFIGURACIÓN ---
-st.set_page_config(page_title="Mapa + QR (Mitad A4 Izquierda)", layout="centered")
-st.title("🗺️ Mapa + QR — Diseño tipo folleto (mitad superior A4)")
+# --- CONFIGURACIÓN DE PÁGINA ---
+st.set_page_config(page_title="Mapa + QR (Diseño institucional)", layout="centered")
+st.title("🗺️ Mapa + QR — Estilo Institucional (mitad superior A4)")
 
 st.markdown("""
-Genera una hoja **A4 vertical**, con:
-- **Título arriba a la izquierda**
-- **QR debajo del título**
-- **Mapa grande a la derecha**
-- Todo contenido en la **mitad superior de la hoja**.
+Crea una hoja **A4 vertical** con el formato profesional:
+- **Título grande** arriba a la izquierda  
+- **Subtítulo pequeño** debajo  
+- **Línea divisoria**  
+- **QR a la izquierda**  
+- **Mapa grande a la derecha**  
+Todo en la **mitad superior de la página**.
 """)
 
 col1, col2 = st.columns(2)
@@ -24,75 +26,86 @@ default_name = ""
 if map_file is not None:
     default_name = os.path.splitext(map_file.name)[0]
 
-name = st.text_input("Nombre que aparecerá arriba", value=default_name)
+name = st.text_input("Título (arriba)", value=default_name)
+subtitle = st.text_input("Subtítulo (debajo del título)", value="Cong. Brescia Española")
 
-with st.expander("⚙️ Ajustes (opcional)"):
-    canvas_bg = st.color_picker("Color de fondo", "#ffffff")
+with st.expander("⚙️ Ajustes opcionales"):
+    bg_color = st.color_picker("Color de fondo", "#ffffff")
     dpi = st.selectbox("Resolución (A4)", [150, 200, 300], index=2)
-    font_size = st.slider("Tamaño de título", 20, 120, 64)
-    qr_size = st.slider("Tamaño QR (px)", 100, 600, 250)
-    margin = st.slider("Margen (px)", 10, 200, 80)
+    font_title = st.slider("Tamaño del título", 20, 120, 70)
+    font_sub = st.slider("Tamaño del subtítulo", 10, 60, 36)
+    qr_size = st.slider("Tamaño del QR (px)", 100, 600, 250)
+    margin = st.slider("Margen (px)", 20, 200, 80)
 
 # --- FUNCIONES ---
-
 def load_image(file):
     return Image.open(file).convert("RGBA")
 
-def compose_left_qr_right_map(map_img, qr_img, title_text, bg_hex="#ffffff",
-                              font_size=64, qr_px=250, margin_px=80, dpi=300):
-    """Diseño: título + QR a la izquierda, mapa grande a la derecha (mitad superior A4)."""
-    # Tamaño A4
+def compose_institutional_layout(map_img, qr_img, title, subtitle,
+                                 bg="#ffffff", font_title=70, font_sub=36,
+                                 qr_px=250, margin_px=80, dpi=300):
+    """Diseño tipo institucional: título + subtítulo + línea + QR izq + mapa der."""
     a4_w_px = int(8.27 * dpi)
     a4_h_px = int(11.69 * dpi)
 
-    # Lienzo base
-    canvas = Image.new("RGBA", (a4_w_px, a4_h_px), bg_hex)
+    # Lienzo
+    canvas = Image.new("RGBA", (a4_w_px, a4_h_px), bg)
     draw = ImageDraw.Draw(canvas)
 
-    # Fuente
+    # Fuentes
     try:
-        font = ImageFont.truetype("DejaVuSans-Bold.ttf", font_size)
+        font_bold = ImageFont.truetype("DejaVuSans-Bold.ttf", font_title)
+        font_subt = ImageFont.truetype("DejaVuSans.ttf", font_sub)
     except:
-        font = ImageFont.load_default()
+        font_bold = ImageFont.load_default()
+        font_subt = ImageFont.load_default()
 
-    # Texto
-    dummy = Image.new("RGBA", (10, 10))
+    # Cálculo de texto
+    dummy = Image.new("RGBA", (10,10))
     d = ImageDraw.Draw(dummy)
     try:
-        bbox = d.textbbox((0, 0), title_text, font=font)
-        text_w, text_h = bbox[2] - bbox[0], bbox[3] - bbox[1]
+        tb = d.textbbox((0,0), title, font=font_bold)
+        sb = d.textbbox((0,0), subtitle, font=font_subt)
+        title_w, title_h = tb[2]-tb[0], tb[3]-tb[1]
+        sub_w, sub_h = sb[2]-sb[0], sb[3]-sb[1]
     except:
-        text_w, text_h = d.textsize(title_text, font=font)
+        title_w, title_h = d.textsize(title, font=font_bold)
+        sub_w, sub_h = d.textsize(subtitle, font=font_subt)
 
     # Redimensionar QR
     qr_img = qr_img.resize((qr_px, qr_px), Image.LANCZOS)
 
-    # Redimensionar mapa
-    map_max_width = int(a4_w_px * 0.55)
-    map_max_height = int(a4_h_px * 0.45)
+    # Redimensionar mapa (grande)
+    max_map_w = int(a4_w_px * 0.55)
+    max_map_h = int(a4_h_px * 0.45)
     mw, mh = map_img.size
-    ratio = min(map_max_width / mw, map_max_height / mh)
-    map_img = map_img.resize((int(mw * ratio), int(mh * ratio)), Image.LANCZOS)
+    ratio = min(max_map_w/mw, max_map_h/mh)
+    map_img = map_img.resize((int(mw*ratio), int(mh*ratio)), Image.LANCZOS)
 
-    # Posiciones
+    # Coordenadas base
     content_top = int(a4_h_px * 0.1)
-    left_col_x = margin_px
-    right_col_x = left_col_x + qr_px + margin_px
+    left_x = margin_px
+    right_x = left_x + qr_px + margin_px
 
-    # Título (izquierda arriba)
-    draw.text((left_col_x, content_top), title_text, fill=(0, 0, 0), font=font)
+    # Título
+    draw.text((left_x, content_top), title, fill=(0,0,0), font=font_bold)
+    subtitle_y = content_top + title_h + 10
+    draw.text((left_x, subtitle_y), subtitle, fill=(80,80,80), font=font_subt)
 
-    # QR (debajo del título)
-    qr_y = content_top + text_h + margin_px // 2
-    canvas.paste(qr_img, (left_col_x, qr_y), qr_img)
+    # Línea divisoria
+    line_y = subtitle_y + sub_h + 20
+    draw.line((left_x, line_y, a4_w_px - margin_px, line_y), fill=(180,180,180), width=3)
 
-    # Mapa (derecha)
-    map_x = right_col_x
+    # QR debajo de la línea
+    qr_y = line_y + 20
+    canvas.paste(qr_img, (left_x, qr_y), qr_img)
+
+    # Mapa grande a la derecha
     map_y = content_top
-    canvas.paste(map_img, (map_x, map_y), map_img)
+    canvas.paste(map_img, (right_x, map_y), map_img)
 
     # Convertir a RGB
-    final = Image.new("RGB", canvas.size, bg_hex)
+    final = Image.new("RGB", canvas.size, bg)
     final.paste(canvas, mask=canvas.split()[3] if canvas.mode == "RGBA" else None)
     return final
 
@@ -101,10 +114,14 @@ if map_file and qr_file:
     map_img = load_image(map_file)
     qr_img = load_image(qr_file)
 
-    final_img = compose_left_qr_right_map(
-        map_img, qr_img, name,
-        bg_hex=canvas_bg,
-        font_size=font_size,
+    final_img = compose_institutional_layout(
+        map_img=map_img,
+        qr_img=qr_img,
+        title=name,
+        subtitle=subtitle,
+        bg=bg_color,
+        font_title=font_title,
+        font_sub=font_sub,
         qr_px=qr_size,
         margin_px=margin,
         dpi=dpi
@@ -116,11 +133,11 @@ if map_file and qr_file:
     buf = io.BytesIO()
     final_img.save(buf, format="PNG")
     buf.seek(0)
-    st.download_button("📥 Descargar PNG", buf, f"{name}_A4_layout.png", "image/png")
+    st.download_button("📥 Descargar PNG", buf, f"{name}_A4_institucional.png", "image/png")
 
     buf_pdf = io.BytesIO()
     final_img.save(buf_pdf, format="PDF")
     buf_pdf.seek(0)
-    st.download_button("📄 Descargar PDF", buf_pdf, f"{name}_A4_layout.pdf", "application/pdf")
+    st.download_button("📄 Descargar PDF", buf_pdf, f"{name}_A4_institucional.pdf", "application/pdf")
 else:
-    st.info("Sube el mapa y el QR para generar el diseño.")
+    st.info("Sube el mapa y el QR para generar el diseño institucional.")
