@@ -3,18 +3,19 @@ from PIL import Image, ImageDraw, ImageFont
 import io, os
 
 # --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="Mapa + QR (Diseño Limpio)", layout="centered")
-st.title("🗺️ Mapa + QR — Versión Profesional Limpia")
+st.set_page_config(page_title="Mapa + QR (Diseño final)", layout="centered")
+st.title("🗺️ Mapa + QR — Estilo Institucional Final")
 
 st.markdown("""
-Genera una hoja **A4 limpia y profesional**, con:
-- **Título arriba a la izquierda**
-- **QR debajo del título, bien separado**
-- **Mapa grande a la derecha**, un poco más abajo  
-- Todo contenido en la **mitad superior de la hoja A4**.
+**Genera una hoja A4 profesional con:**
+- Título y subtítulo arriba a la izquierda  
+- Línea divisoria  
+- **QR a la izquierda**  
+- **Mapa a la derecha**, más abajo (como en ejemplo real)  
+- Todo contenido en la mitad superior del A4
 """)
 
-# Archivos
+# 🟢 Invertimos el orden: QR primero, Mapa después
 col1, col2 = st.columns(2)
 with col1:
     qr_file = st.file_uploader("🔳 Sube la imagen del QR", type=["png", "jpg", "jpeg"])
@@ -22,62 +23,89 @@ with col2:
     map_file = st.file_uploader("🗺️ Sube la imagen del mapa", type=["png", "jpg", "jpeg"])
 
 default_name = ""
-if map_file:
+if map_file is not None:
     default_name = os.path.splitext(map_file.name)[0]
 
 name = st.text_input("Título principal", value=default_name)
+subtitle = st.text_input("Subtítulo (debajo del título)", value="Cong. Brescia Española")
 
-# Ajustes
 with st.expander("⚙️ Ajustes opcionales"):
     bg_color = st.color_picker("Color de fondo", "#ffffff")
     dpi = st.selectbox("Resolución (A4)", [150, 200, 300], index=2)
-    font_size = st.slider("Tamaño de título", 30, 120, 80)
-    qr_size = st.slider("Tamaño QR (px)", 150, 600, 250)
-    margin = st.slider("Margen lateral (px)", 20, 200, 100)
-    qr_gap = st.slider("Distancia del QR desde el título (px)", 50, 600, 180)
-    map_offset_y = st.slider("Altura vertical del mapa (px)", 0, 600, 180)
+    font_title = st.slider("Tamaño del título", 20, 120, 70)
+    font_sub = st.slider("Tamaño del subtítulo", 10, 60, 36)
+    qr_size = st.slider("Tamaño del QR (px)", 100, 600, 250)
+    margin = st.slider("Margen lateral (px)", 20, 200, 80)
+    extra_space = st.slider("Espacio entre línea y QR (px)", 0, 400, 120)
+    map_offset_y = st.slider("Desplazamiento vertical del mapa (px)", 0, 600, 150)
 
 # --- FUNCIONES ---
 def load_image(file):
     return Image.open(file).convert("RGBA")
 
-def compose_clean(map_img, qr_img, title_text, bg="#ffffff",
-                  font_size=80, qr_px=250, margin_px=100,
-                  qr_gap=180, map_offset_y=180, dpi=300):
-    """Diseño limpio, sin sombras, QR a la izquierda, mapa a la derecha."""
-    # Tamaño A4
+def compose_institutional_layout(map_img, qr_img, title, subtitle,
+                                 bg="#ffffff", font_title=70, font_sub=36,
+                                 qr_px=250, margin_px=80, extra_space=120,
+                                 map_offset_y=150, dpi=300):
+    """Diseño institucional con QR a la izquierda y mapa a la derecha."""
     a4_w_px = int(8.27 * dpi)
     a4_h_px = int(11.69 * dpi)
+
+    # Lienzo base
     canvas = Image.new("RGBA", (a4_w_px, a4_h_px), bg)
     draw = ImageDraw.Draw(canvas)
 
-    # Fuente
+    # Fuentes
     try:
-        font = ImageFont.truetype("DejaVuSans-Bold.ttf", font_size)
+        font_bold = ImageFont.truetype("DejaVuSans-Bold.ttf", font_title)
+        font_subt = ImageFont.truetype("DejaVuSans.ttf", font_sub)
     except:
-        font = ImageFont.load_default()
+        font_bold = ImageFont.load_default()
+        font_subt = ImageFont.load_default()
 
-    # Título arriba izquierda
-    title_x = margin_px
-    title_y = int(a4_h_px * 0.1)
-    draw.text((title_x, title_y), title_text, fill=(0,0,0), font=font)
+    # Calcular tamaños de texto
+    dummy = Image.new("RGBA", (10,10))
+    d = ImageDraw.Draw(dummy)
+    try:
+        tb = d.textbbox((0,0), title, font=font_bold)
+        sb = d.textbbox((0,0), subtitle, font=font_subt)
+        title_w, title_h = tb[2]-tb[0], tb[3]-tb[1]
+        sub_w, sub_h = sb[2]-sb[0], sb[3]-sb[1]
+    except:
+        title_w, title_h = d.textsize(title, font=font_bold)
+        sub_w, sub_h = d.textsize(subtitle, font=font_subt)
 
-    # QR más abajo
+    # Redimensionar QR
     qr_img = qr_img.resize((qr_px, qr_px), Image.LANCZOS)
-    qr_x = margin_px
-    qr_y = title_y + font_size + qr_gap
-    canvas.paste(qr_img, (qr_x, qr_y), qr_img)
 
-    # Mapa grande a la derecha
-    map_max_width = int(a4_w_px * 0.55)
-    map_max_height = int(a4_h_px * 0.45)
+    # Redimensionar mapa
+    max_map_w = int(a4_w_px * 0.55)
+    max_map_h = int(a4_h_px * 0.45)
     mw, mh = map_img.size
-    ratio = min(map_max_width/mw, map_max_height/mh)
+    ratio = min(max_map_w/mw, max_map_h/mh)
     map_img = map_img.resize((int(mw*ratio), int(mh*ratio)), Image.LANCZOS)
 
-    map_x = qr_x + qr_px + margin_px
-    map_y = title_y + map_offset_y
-    canvas.paste(map_img, (map_x, map_y), map_img)
+    # Coordenadas base
+    content_top = int(a4_h_px * 0.1)
+    left_x = margin_px
+    right_x = left_x + qr_px + margin_px
+
+    # Título y subtítulo
+    draw.text((left_x, content_top), title, fill=(0,0,0), font=font_bold)
+    subtitle_y = content_top + title_h + 10
+    draw.text((left_x, subtitle_y), subtitle, fill=(80,80,80), font=font_subt)
+
+    # Línea divisoria
+    line_y = subtitle_y + sub_h + 20
+    draw.line((left_x, line_y, a4_w_px - margin_px, line_y), fill=(180,180,180), width=3)
+
+    # QR (a la izquierda)
+    qr_y = line_y + extra_space
+    canvas.paste(qr_img, (left_x, qr_y), qr_img)
+
+    # Mapa (a la derecha y más abajo)
+    map_y = content_top + map_offset_y
+    canvas.paste(map_img, (right_x, map_y), map_img)
 
     # Convertir a RGB final
     final = Image.new("RGB", canvas.size, bg)
@@ -89,30 +117,32 @@ if map_file and qr_file:
     map_img = load_image(map_file)
     qr_img = load_image(qr_file)
 
-    final_img = compose_clean(
+    final_img = compose_institutional_layout(
         map_img=map_img,
         qr_img=qr_img,
-        title_text=name,
+        title=name,
+        subtitle=subtitle,
         bg=bg_color,
-        font_size=font_size,
+        font_title=font_title,
+        font_sub=font_sub,
         qr_px=qr_size,
         margin_px=margin,
-        qr_gap=qr_gap,
+        extra_space=extra_space,
         map_offset_y=map_offset_y,
         dpi=dpi
     )
 
-    st.subheader("🖼️ Vista previa:")
+    st.subheader("🖼️ Previsualización:")
     st.image(final_img, use_column_width=True)
 
     buf = io.BytesIO()
     final_img.save(buf, format="PNG")
     buf.seek(0)
-    st.download_button("📥 Descargar PNG", buf, f"{name}_A4_limpio.png", "image/png")
+    st.download_button("📥 Descargar PNG", buf, f"{name}_A4_institucional.png", "image/png")
 
     buf_pdf = io.BytesIO()
     final_img.save(buf_pdf, format="PDF")
     buf_pdf.seek(0)
-    st.download_button("📄 Descargar PDF", buf_pdf, f"{name}_A4_limpio.pdf", "application/pdf")
+    st.download_button("📄 Descargar PDF", buf_pdf, f"{name}_A4_institucional.pdf", "application/pdf")
 else:
-    st.info("Sube el QR y el mapa para generar la composición.")
+    st.info("Sube primero el QR y luego el mapa para generar el diseño.")
