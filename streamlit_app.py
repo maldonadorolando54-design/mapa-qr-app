@@ -3,17 +3,15 @@ from PIL import Image, ImageDraw, ImageFont
 import io, os
 
 # --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="Mapa + QR (Diseño institucional)", layout="centered")
-st.title("🗺️ Mapa + QR — Estilo Institucional (mitad superior A4)")
+st.set_page_config(page_title="Mapa + QR (Diseño institucional mejorado)", layout="centered")
+st.title("🗺️ Mapa + QR — Estilo Institucional (QR más abajo)")
 
 st.markdown("""
-Crea una hoja **A4 vertical** con el formato profesional:
-- **Título grande** arriba a la izquierda  
-- **Subtítulo pequeño** debajo  
-- **Línea divisoria**  
-- **QR a la izquierda**  
-- **Mapa grande a la derecha**  
-Todo en la **mitad superior de la página**.
+Crea una hoja **A4 vertical** con el formato institucional:
+- Título y subtítulo arriba a la izquierda  
+- Línea divisoria  
+- QR más abajo (mejor equilibrio visual)  
+- Mapa grande a la derecha  
 """)
 
 col1, col2 = st.columns(2)
@@ -26,7 +24,7 @@ default_name = ""
 if map_file is not None:
     default_name = os.path.splitext(map_file.name)[0]
 
-name = st.text_input("Título (arriba)", value=default_name)
+name = st.text_input("Título principal", value=default_name)
 subtitle = st.text_input("Subtítulo (debajo del título)", value="Cong. Brescia Española")
 
 with st.expander("⚙️ Ajustes opcionales"):
@@ -35,7 +33,8 @@ with st.expander("⚙️ Ajustes opcionales"):
     font_title = st.slider("Tamaño del título", 20, 120, 70)
     font_sub = st.slider("Tamaño del subtítulo", 10, 60, 36)
     qr_size = st.slider("Tamaño del QR (px)", 100, 600, 250)
-    margin = st.slider("Margen (px)", 20, 200, 80)
+    margin = st.slider("Margen lateral (px)", 20, 200, 80)
+    extra_space = st.slider("Espacio entre línea y QR (px)", 0, 400, 120)
 
 # --- FUNCIONES ---
 def load_image(file):
@@ -43,12 +42,12 @@ def load_image(file):
 
 def compose_institutional_layout(map_img, qr_img, title, subtitle,
                                  bg="#ffffff", font_title=70, font_sub=36,
-                                 qr_px=250, margin_px=80, dpi=300):
-    """Diseño tipo institucional: título + subtítulo + línea + QR izq + mapa der."""
+                                 qr_px=250, margin_px=80, extra_space=120, dpi=300):
+    """Diseño institucional con QR más abajo."""
     a4_w_px = int(8.27 * dpi)
     a4_h_px = int(11.69 * dpi)
 
-    # Lienzo
+    # Lienzo base
     canvas = Image.new("RGBA", (a4_w_px, a4_h_px), bg)
     draw = ImageDraw.Draw(canvas)
 
@@ -60,7 +59,7 @@ def compose_institutional_layout(map_img, qr_img, title, subtitle,
         font_bold = ImageFont.load_default()
         font_subt = ImageFont.load_default()
 
-    # Cálculo de texto
+    # Calcular tamaños de texto
     dummy = Image.new("RGBA", (10,10))
     d = ImageDraw.Draw(dummy)
     try:
@@ -75,7 +74,7 @@ def compose_institutional_layout(map_img, qr_img, title, subtitle,
     # Redimensionar QR
     qr_img = qr_img.resize((qr_px, qr_px), Image.LANCZOS)
 
-    # Redimensionar mapa (grande)
+    # Redimensionar mapa
     max_map_w = int(a4_w_px * 0.55)
     max_map_h = int(a4_h_px * 0.45)
     mw, mh = map_img.size
@@ -96,15 +95,15 @@ def compose_institutional_layout(map_img, qr_img, title, subtitle,
     line_y = subtitle_y + sub_h + 20
     draw.line((left_x, line_y, a4_w_px - margin_px, line_y), fill=(180,180,180), width=3)
 
-    # QR debajo de la línea
-    qr_y = line_y + 20
+    # QR (más abajo)
+    qr_y = line_y + extra_space
     canvas.paste(qr_img, (left_x, qr_y), qr_img)
 
-    # Mapa grande a la derecha
+    # Mapa (alineado arriba a la derecha)
     map_y = content_top
     canvas.paste(map_img, (right_x, map_y), map_img)
 
-    # Convertir a RGB
+    # Convertir a RGB final
     final = Image.new("RGB", canvas.size, bg)
     final.paste(canvas, mask=canvas.split()[3] if canvas.mode == "RGBA" else None)
     return final
@@ -124,6 +123,7 @@ if map_file and qr_file:
         font_sub=font_sub,
         qr_px=qr_size,
         margin_px=margin,
+        extra_space=extra_space,
         dpi=dpi
     )
 
@@ -140,4 +140,4 @@ if map_file and qr_file:
     buf_pdf.seek(0)
     st.download_button("📄 Descargar PDF", buf_pdf, f"{name}_A4_institucional.pdf", "application/pdf")
 else:
-    st.info("Sube el mapa y el QR para generar el diseño institucional.")
+    st.info("Sube el mapa y el QR para generar el diseño institucional con QR más abajo.")
