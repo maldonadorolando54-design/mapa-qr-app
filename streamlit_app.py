@@ -3,15 +3,15 @@ from PIL import Image, ImageDraw, ImageFont
 import io, os
 
 # --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="Mapa + QR (Diseño institucional mejorado)", layout="centered")
-st.title("🗺️ Mapa + QR — Estilo Institucional (QR más abajo)")
+st.set_page_config(page_title="Mapa + QR (Mapa más abajo)", layout="centered")
+st.title("🗺️ Mapa + QR — Estilo Institucional (Mapa más abajo)")
 
 st.markdown("""
-Crea una hoja **A4 vertical** con el formato institucional:
-- Título y subtítulo arriba a la izquierda  
+Crea una hoja **A4 vertical** con:
+- Título y subtítulo arriba  
 - Línea divisoria  
-- QR más abajo (mejor equilibrio visual)  
-- Mapa grande a la derecha  
+- QR más abajo a la izquierda  
+- **Mapa un poco más abajo**, alineado a la derecha  
 """)
 
 col1, col2 = st.columns(2)
@@ -35,6 +35,7 @@ with st.expander("⚙️ Ajustes opcionales"):
     qr_size = st.slider("Tamaño del QR (px)", 100, 600, 250)
     margin = st.slider("Margen lateral (px)", 20, 200, 80)
     extra_space = st.slider("Espacio entre línea y QR (px)", 0, 400, 120)
+    map_offset_y = st.slider("Desplazamiento vertical del mapa (px)", 0, 600, 150)
 
 # --- FUNCIONES ---
 def load_image(file):
@@ -42,8 +43,9 @@ def load_image(file):
 
 def compose_institutional_layout(map_img, qr_img, title, subtitle,
                                  bg="#ffffff", font_title=70, font_sub=36,
-                                 qr_px=250, margin_px=80, extra_space=120, dpi=300):
-    """Diseño institucional con QR más abajo."""
+                                 qr_px=250, margin_px=80, extra_space=120,
+                                 map_offset_y=150, dpi=300):
+    """Diseño institucional con mapa más abajo."""
     a4_w_px = int(8.27 * dpi)
     a4_h_px = int(11.69 * dpi)
 
@@ -95,12 +97,12 @@ def compose_institutional_layout(map_img, qr_img, title, subtitle,
     line_y = subtitle_y + sub_h + 20
     draw.line((left_x, line_y, a4_w_px - margin_px, line_y), fill=(180,180,180), width=3)
 
-    # QR (más abajo)
+    # QR más abajo
     qr_y = line_y + extra_space
     canvas.paste(qr_img, (left_x, qr_y), qr_img)
 
-    # Mapa (alineado arriba a la derecha)
-    map_y = content_top
+    # Mapa más abajo
+    map_y = content_top + map_offset_y
     canvas.paste(map_img, (right_x, map_y), map_img)
 
     # Convertir a RGB final
@@ -124,6 +126,7 @@ if map_file and qr_file:
         qr_px=qr_size,
         margin_px=margin,
         extra_space=extra_space,
+        map_offset_y=map_offset_y,
         dpi=dpi
     )
 
@@ -140,4 +143,4 @@ if map_file and qr_file:
     buf_pdf.seek(0)
     st.download_button("📄 Descargar PDF", buf_pdf, f"{name}_A4_institucional.pdf", "application/pdf")
 else:
-    st.info("Sube el mapa y el QR para generar el diseño institucional con QR más abajo.")
+    st.info("Sube el mapa y el QR para generar el diseño institucional.")
