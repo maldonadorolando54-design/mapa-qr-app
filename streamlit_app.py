@@ -7,8 +7,8 @@ try:
 except Exception:
     qrcode = None
 
-st.set_page_config(page_title="Mapa + QR — Layout simplificado", layout="centered")
-st.title("🗺️ MAPA + QR + LINK")
+st.set_page_config(page_title="Mapa + QR — Layout absoluto", layout="centered")
+st.title("🗺️ Mapa + QR — Posiciones absolutas")
 
 if qrcode is None:
     st.error("Instala `qrcode` con `pip install qrcode[pil] Pillow` para usar QR desde URL.")
@@ -25,25 +25,25 @@ default_name = os.path.splitext(map_file.name)[0] if map_file else ""
 title_text = st.text_input("Título principal", value=default_name)
 subtitle_text = st.text_input("Subtítulo", value="Cong. Brescia Española")
 
-# --- AJUSTES SIMPLIFICADOS CON SLIDERS (Nuevo orden) ---
+# --- AJUSTES CON SLIDERS X/Y ---
 with st.sidebar.expander("🗺️ Mapa"):
     map_scale = st.slider("Escala mapa (%)", 10, 300, 157)
-    map_x = st.slider("Mover mapa Derecha / Izquierda", -500, 500, 600)
-    map_y = st.slider("Mover mapa Arriba / Abajo", -500, 500, 600)
+    map_x = st.slider("Mapa X (px)", 0, 1200, 600)
+    map_y = st.slider("Mapa Y (px)", 0, 1200, 600)
 
 with st.sidebar.expander("🔳 QR"):
     qr_size = st.slider("Tamaño QR (px)", 50, 800, 550)
-    qr_x = st.slider("Mover QR Derecha / Izquierda", -500, 500, 30)
-    qr_y = st.slider("Mover QR Arriba / Abajo", -500, 500, 950)
+    qr_x = st.slider("QR X (px)", 0, 1200, 30)
+    qr_y = st.slider("QR Y (px)", 0, 1200, 950)
 
 with st.sidebar.expander("📝 Título y Subtítulo"):
     font_title = st.slider("Tamaño título (px)", 10, 200, 150)
     font_sub = st.slider("Tamaño subtítulo (px)", 10, 100, 100)
     spacing_title_sub = st.slider("Espacio título-subtítulo (px)", 0, 100, 100)
-    title_x = st.slider("Mover Título Derecha / Izquierda", -500, 500, 30)
-    title_y = st.slider("Mover Título Arriba / Abajo", -500, 500, 50)
-    subtitle_x = st.slider("Mover Subtítulo Derecha / Izquierda", -500, 500, 30)
-    subtitle_y = st.slider("Mover Subtítulo Arriba / Abajo", -500, 500, 200)
+    title_x = st.slider("Título X (px)", 0, 1200, 30)
+    title_y = st.slider("Título Y (px)", 0, 1200, 50)
+    subtitle_x = st.slider("Subtítulo X (px)", 0, 1200, 30)
+    subtitle_y = st.slider("Subtítulo Y (px)", 0, 1200, 200)
 
     # Colores al final del grupo
     title_color = st.color_picker("Color título", "#000000")
@@ -141,22 +141,14 @@ if map_file and (qr_link or qr_file):
         qr_img = None
 
     if qr_img:
-        # Posiciones iniciales aplicando desplazamiento relativo
-        default_map_pos = (map_x, map_y)
-        default_qr_pos = (qr_x, qr_y)
-        default_title_pos = (title_x, title_y)
-        default_subtitle_pos = (subtitle_x, subtitle_y)
-
         final_img = compose_layout(
             title_text, subtitle_text, map_img, qr_img,
             dpi=dpi, font_title=font_title, font_sub=font_sub,
             title_color=title_color, subtitle_color=subtitle_color, spacing_title_sub=spacing_title_sub,
-            title_pos=(default_title_pos[0]+title_x, default_title_pos[1]+title_y),
-            subtitle_pos=(default_subtitle_pos[0]+subtitle_x, default_subtitle_pos[1]+subtitle_y),
-            qr_pos=(default_qr_pos[0]+qr_x, default_qr_pos[1]+qr_y),
-            qr_size=qr_size,
-            map_pos=(default_map_pos[0]+map_x, default_map_pos[1]+map_y),
-            map_scale=map_scale,
+            title_pos=(title_x, title_y),
+            subtitle_pos=(subtitle_x, subtitle_y),
+            qr_pos=(qr_x, qr_y), qr_size=qr_size,
+            map_pos=(map_x, map_y), map_scale=map_scale,
             bg_color=bg_color, show_guides=show_guides, export_cut_line=export_cut_line
         )
 
