@@ -28,20 +28,20 @@ subtitle_text = st.text_input("Subtítulo", value="Cong. Brescia Española")
 # --- AJUSTES CON SLIDERS X/Y ---
 with st.sidebar.expander("🗺️ Mapa"):
     map_scale = st.slider("Escala mapa (%)", 10, 300, 157)
-    map_x = st.slider("Mapa IZQ/DER(px)", 0, 1200, 600)
-    map_y = st.slider("Mapa ARRIBA/ABAJO(px)", 0, 1200, 600)
+    map_x = st.slider("Mapa X IZQ/DER(px)", 0, 1200, 580)
+    map_y = st.slider("Mapa Y ARRIBA/ABAJO(px)", 0, 1200, 600)
 
 with st.sidebar.expander("🔳 QR"):
     qr_size = st.slider("Tamaño QR (px)", 50, 800, 550)
-    qr_x = st.slider("QR IZQ/DER(px)", 0, 1200, 30)
-    qr_y = st.slider("QR ARRIBA/ABAJO(px)", 0, 1200, 950)
+    qr_x = st.slider("QR X IZQ/DER(px)", 0, 1200, 30)
+    qr_y = st.slider("QR Y ARRIBA/ABAJO(px)", 0, 1200, 950)
 
 with st.sidebar.expander("📝 Título y Subtítulo"):
     font_title = st.slider("Tamaño título (px)", 10, 200, 150)
     font_sub = st.slider("Tamaño subtítulo (px)", 10, 100, 100)
     spacing_title_sub = st.slider("Espacio título-subtítulo (px)", 0, 100, 100)
-    title_x = st.slider("Título IZQ/DER(px)", 0, 1200, 30)
-    title_y = st.slider("Título ARRIBA/ABAJO(px)", 0, 1200, 50)
+    title_x = st.slider("Título X IZQ/DER(px)", 0, 1200, 30)
+    title_y = st.slider("Título Y ARRIBA/ABAJO(px)", 0, 1200, 50)
     subtitle_x = st.slider("Subtítulo IZQ/DER(px)", 0, 1200, 30)
     subtitle_y = st.slider("Subtítulo ARRIBA/ABAJO(px)", 0, 1200, 200)
 
