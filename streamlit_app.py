@@ -28,25 +28,22 @@ subtitle_text = st.text_input("Subtítulo", value="Cong. Brescia Española")
 # --- AJUSTES CON SLIDERS X/Y ---
 with st.sidebar.expander("🗺️ Mapa"):
     map_scale = st.slider("Escala mapa (%)", 10, 300, 157)
-    # Posición inicial a la derecha
     map_x = st.slider("Mapa X (px)", 0, 1200, 600)
     map_y = st.slider("Mapa Y (px)", 0, 1200, 150)
 
 with st.sidebar.expander("🔳 QR"):
-    qr_size = st.slider("Tamaño QR (px)", 50, 800, 250)
-    # Posición inicial abajo a la izquierda
-    qr_x = st.slider("QR X (px)", 0, 1200, 30)
-    qr_y = st.slider("QR Y (px)", 0, 1200, 800)
+    qr_size = st.slider("Tamaño QR (px)", 50, 800, 600)  # QR más grande
+    qr_x = st.slider("QR X (px)", 0, 1200, 40)
+    qr_y = st.slider("QR Y (px)", 0, 1200, 900)
 
 with st.sidebar.expander("📝 Título y Subtítulo"):
-    font_title = st.slider("Tamaño título (px)", 10, 200, 70)
-    font_sub = st.slider("Tamaño subtítulo (px)", 10, 100, 36)
-    spacing_title_sub = st.slider("Espacio título-subtítulo (px)", 0, 100, 10)
-    # Posición inicial arriba a la izquierda
+    font_title = st.slider("Tamaño título (px)", 10, 200, 150)  # título más grande
+    font_sub = st.slider("Tamaño subtítulo (px)", 10, 100, 50)  # subtítulo proporcional
+    spacing_title_sub = st.slider("Espacio título-subtítulo (px)", 0, 100, 20)
     title_x = st.slider("Título X (px)", 0, 1200, 80)
     title_y = st.slider("Título Y (px)", 0, 1200, 50)
     subtitle_x = st.slider("Subtítulo X (px)", 0, 1200, 80)
-    subtitle_y = st.slider("Subtítulo Y (px)", 0, 1200, 120)
+    subtitle_y = st.slider("Subtítulo Y (px)", 0, 1200, 150)
 
     # Colores al final del grupo
     title_color = st.color_picker("Color título", "#000000")
