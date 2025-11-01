@@ -7,7 +7,7 @@ try:
 except Exception:
     qrcode = None
 
-st.set_page_config(page_title="Mapa + QR — Layout absoluto editable", layout="centered")
+st.set_page_config(page_title="Mapa + QR — Layout absoluto", layout="centered")
 st.title("🗺️ Mapa + QR + URL + Posiciones absolutas")
 
 if qrcode is None:
@@ -25,25 +25,25 @@ default_name = os.path.splitext(map_file.name)[0] if map_file else ""
 title_text = st.text_input("Título principal", value=default_name)
 subtitle_text = st.text_input("Subtítulo", value="Cong. Brescia Española")
 
-# --- AJUSTES CON SLIDERS EDITABLES ---
+# --- AJUSTES CON SLIDERS X/Y ---
 with st.sidebar.expander("🗺️ Mapa"):
-    map_scale = st.slider("Escala mapa (%)", 10, 300, 157, step=1, format="%d")
-    map_x = st.slider("Mapa X IZQ/DER(px)", 0, 1200, 580, step=1, format="%d")
-    map_y = st.slider("Mapa Y ARRIBA/ABAJO(px)", 0, 1200, 600, step=1, format="%d")
+    map_scale = st.slider("Escala mapa (%)", 10, 300, 157)
+    map_x = st.slider("Mapa X IZQ/DER(px)", 0, 1200, 580)
+    map_y = st.slider("Mapa Y ARRIBA/ABAJO(px)", 0, 1200, 600)
 
 with st.sidebar.expander("🔳 QR"):
-    qr_size = st.slider("Tamaño QR (px)", 50, 800, 550, step=1, format="%d")
-    qr_x = st.slider("QR X IZQ/DER(px)", 0, 1200, 30, step=1, format="%d")
-    qr_y = st.slider("QR Y ARRIBA/ABAJO(px)", 0, 1200, 950, step=1, format="%d")
+    qr_size = st.slider("Tamaño QR (px)", 50, 800, 550)
+    qr_x = st.slider("QR X IZQ/DER(px)", 0, 1200, 30)
+    qr_y = st.slider("QR Y ARRIBA/ABAJO(px)", 0, 1200, 950)
 
 with st.sidebar.expander("📝 Título y Subtítulo"):
-    font_title = st.slider("Tamaño título (px)", 10, 200, 150, step=1, format="%d")
-    font_sub = st.slider("Tamaño subtítulo (px)", 10, 100, 100, step=1, format="%d")
-    spacing_title_sub = st.slider("Espacio título-subtítulo (px)", 0, 100, 100, step=1, format="%d")
-    title_x = st.slider("Título X IZQ/DER(px)", 0, 1200, 30, step=1, format="%d")
-    title_y = st.slider("Título Y ARRIBA/ABAJO(px)", 0, 1200, 50, step=1, format="%d")
-    subtitle_x = st.slider("Subtítulo X IZQ/DER(px)", 0, 1200, 30, step=1, format="%d")
-    subtitle_y = st.slider("Subtítulo Y ARRIBA/ABAJO(px)", 0, 1200, 200, step=1, format="%d")
+    font_title = st.slider("Tamaño título (px)", 10, 200, 150)
+    font_sub = st.slider("Tamaño subtítulo (px)", 10, 100, 100)
+    spacing_title_sub = st.slider("Espacio título-subtítulo (px)", 0, 100, 100)
+    title_x = st.slider("Título X IZQ/DER(px)", 0, 1200, 30)
+    title_y = st.slider("Título Y ARRIBA/ABAJO(px)", 0, 1200, 50)
+    subtitle_x = st.slider("Subtítulo IZQ/DER(px)", 0, 1200, 30)
+    subtitle_y = st.slider("Subtítulo ARRIBA/ABAJO(px)", 0, 1200, 200)
 
     # Colores al final del grupo
     title_color = st.color_picker("Color título", "#000000")
@@ -69,8 +69,7 @@ def generate_qr_image(url, qr_px, error_level="QUARTILE"):
               "MEDIUM": qrcode.constants.ERROR_CORRECT_M,
               "QUARTILE": qrcode.constants.ERROR_CORRECT_Q,
               "HIGH": qrcode.constants.ERROR_CORRECT_H}
-    qr = qrcode.QRCode(error_correction=ec_map.get(error_level, qrcode.constants.ERROR_CORRECT_Q),
-                       box_size=10, border=4)
+    qr = qrcode.QRCode(error_correction=ec_map.get(error_level, qrcode.constants.ERROR_CORRECT_Q), box_size=10, border=4)
     qr.add_data(url)
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white").convert("RGBA")
