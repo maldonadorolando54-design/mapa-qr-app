@@ -28,8 +28,8 @@ subtitle_text = st.text_input("Subtítulo", value="Cong. Brescia Española")
 # --- AJUSTES CON SLIDERS X/Y ---
 with st.sidebar.expander("🗺️ Mapa"):
     map_scale = st.slider("Escala mapa (%)", 10, 300, 157)
-    map_x = st.slider("Mapa X (px)", 0, 1200, 600)
-    map_y = st.slider("Mapa Y (px)", 0, 1200, 600)
+    map_x = st.slider("Mapa IZQ/DER(px)", 0, 1200, 600)
+    map_y = st.slider("Mapa ARRIBA/ABAJO(px)", 0, 1200, 600)
 
 with st.sidebar.expander("🔳 QR"):
     qr_size = st.slider("Tamaño QR (px)", 50, 800, 550)
