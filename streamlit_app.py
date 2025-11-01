@@ -8,7 +8,7 @@ except Exception:
     qrcode = None
 
 st.set_page_config(page_title="Mapa + QR — Layout absoluto", layout="centered")
-st.title("🗺️ Mapa + QR — Posiciones absolutas")
+st.title("🗺️ Mapa + QR + URL + Posiciones absolutas")
 
 if qrcode is None:
     st.error("Instala `qrcode` con `pip install qrcode[pil] Pillow` para usar QR desde URL.")
