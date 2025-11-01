@@ -7,7 +7,7 @@ try:
 except Exception:
     qrcode = None
 
-st.set_page_config(page_title="Mapa + QR — Layout seguro", layout="centered")
+st.set_page_config(page_title="Mapa + QR — Layout simplificado", layout="centered")
 st.title("🗺️ Mapa + QR — Ajuste máximo al lienzo")
 
 if qrcode is None:
@@ -28,22 +28,22 @@ subtitle_text = st.text_input("Subtítulo", value="Cong. Brescia Española")
 # --- AJUSTES SIMPLIFICADOS CON SLIDERS (Nuevo orden) ---
 with st.sidebar.expander("🗺️ Mapa"):
     map_scale = st.slider("Escala mapa (%)", 10, 300, 157)
-    map_x = st.slider("Mapa X (px)", -500, 1000, 600)
-    map_y = st.slider("Mapa Y (px)", -500, 1000, 600)
+    map_hor = st.slider("Mover mapa Derecha / Izquierda", -500, 500, 0)
+    map_ver = st.slider("Mover mapa Arriba / Abajo", -500, 500, 0)
 
 with st.sidebar.expander("🔳 QR"):
     qr_size = st.slider("Tamaño QR (px)", 50, 800, 550)
-    qr_x = st.slider("QR X (px)", -500, 1000, 30)
-    qr_y = st.slider("QR Y (px)", -500, 1000, 950)
+    qr_hor = st.slider("Mover QR Derecha / Izquierda", -500, 500, 0)
+    qr_ver = st.slider("Mover QR Arriba / Abajo", -500, 500, 0)
 
 with st.sidebar.expander("📝 Título y Subtítulo"):
     font_title = st.slider("Tamaño título (px)", 10, 200, 150)
     font_sub = st.slider("Tamaño subtítulo (px)", 10, 100, 100)
     spacing_title_sub = st.slider("Espacio título-subtítulo (px)", 0, 100, 100)
-    title_x = st.slider("Título X (px)", -500, 1000, 30)
-    title_y = st.slider("Título Y (px)", -500, 1000, 50)
-    subtitle_x = st.slider("Subtítulo X (px)", -500, 1000, 30)
-    subtitle_y = st.slider("Subtítulo Y (px)", -500, 1000, 200)
+    title_hor = st.slider("Mover Título Derecha / Izquierda", -500, 500, 0)
+    title_ver = st.slider("Mover Título Arriba / Abajo", -500, 500, 0)
+    subtitle_hor = st.slider("Mover Subtítulo Derecha / Izquierda", -500, 500, 0)
+    subtitle_ver = st.slider("Mover Subtítulo Arriba / Abajo", -500, 500, 0)
 
     # Colores al final del grupo
     title_color = st.color_picker("Color título", "#000000")
@@ -141,13 +141,21 @@ if map_file and (qr_link or qr_file):
         qr_img = None
 
     if qr_img:
+        # Posiciones iniciales
+        default_map_pos = (map_x, map_y)
+        default_qr_pos = (qr_x, qr_y)
+        default_title_pos = (title_x, title_y)
+        default_subtitle_pos = (subtitle_x, subtitle_y)
+
+        # Aplicar desplazamiento relativo
         final_img = compose_layout(
             title_text, subtitle_text, map_img, qr_img,
             dpi=dpi, font_title=font_title, font_sub=font_sub,
             title_color=title_color, subtitle_color=subtitle_color, spacing_title_sub=spacing_title_sub,
-            title_pos=(title_x, title_y), subtitle_pos=(subtitle_x, subtitle_y),
-            qr_pos=(qr_x, qr_y), qr_size=qr_size,
-            map_pos=(map_x, map_y), map_scale=map_scale,
+            title_pos=(default_title_pos[0]+title_hor, default_title_pos[1]+title_ver),
+            subtitle_pos=(default_subtitle_pos[0]+subtitle_hor, default_subtitle_pos[1]+subtitle_ver),
+            qr_pos=(default_qr_pos[0]+qr_hor, default_qr_pos[1]+qr_ver), qr_size=qr_size,
+            map_pos=(default_map_pos[0]+map_hor, default_map_pos[1]+map_ver), map_scale=map_scale,
             bg_color=bg_color, show_guides=show_guides, export_cut_line=export_cut_line
         )
 
