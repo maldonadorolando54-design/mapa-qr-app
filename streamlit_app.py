@@ -69,7 +69,8 @@ def generate_qr_image(url, qr_px, error_level="QUARTILE"):
               "MEDIUM": qrcode.constants.ERROR_CORRECT_M,
               "QUARTILE": qrcode.constants.ERROR_CORRECT_Q,
               "HIGH": qrcode.constants.ERROR_CORRECT_H}
-    qr = qrcode.QRCode(error_correction=ec_map.get(error_level, qrcode.constants.ERROR_CORRECT_Q), box_size=10, border=4)
+    qr = qrcode.QRCode(error_correction=ec_map.get(error_level, qrcode.constants.ERROR_CORRECT_Q),
+                       box_size=10, border=4)
     qr.add_data(url)
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white").convert("RGBA")
@@ -153,4 +154,16 @@ if map_file and (qr_link or qr_file):
         )
 
         st.subheader("🖼️ Previsualización")
-        st.image(final
+        st.image(final_img, use_column_width=True)
+
+        buf = io.BytesIO()
+        final_img.save(buf, format="PNG")
+        buf.seek(0)
+        st.download_button("📥 Descargar PNG", buf, f"{title_text}_A4.png", "image/png")
+
+        buf_pdf = io.BytesIO()
+        final_img.save(buf_pdf, format="PDF")
+        buf_pdf.seek(0)
+        st.download_button("📄 Descargar PDF", buf_pdf, f"{title_text}_A4.pdf", "application/pdf")
+else:
+    st.info("Sube mapa y proporciona QR (URL o imagen) para generar el diseño.")
