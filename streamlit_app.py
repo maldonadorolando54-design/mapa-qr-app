@@ -69,13 +69,13 @@ with st.sidebar.expander("🔳 Código QR"):
                         key="qr_size_slider", on_change=sync, args=("qr_size_slider","qr_size_num"))
     qr_size_num = st.number_input("Tamaño QR (px)", 50, 800, st.session_state["qr_size_num"],
                                   key="qr_size_num", on_change=sync, args=("qr_size_num","qr_size_slider"))
-    qr_x = st.slider("QR X (px)", 0, 2400, st.session_state["qr_x_slider"],
+    qr_x = st.slider("QR X IZQ/DERE(px)", 0, 2400, st.session_state["qr_x_slider"],
                      key="qr_x_slider", on_change=sync, args=("qr_x_slider","qr_x_num"))
-    qr_x_num = st.number_input("QR X (px)", 0, 2400, st.session_state["qr_x_num"],
+    qr_x_num = st.number_input("QR X IZQ/DERE(px)", 0, 2400, st.session_state["qr_x_num"],
                                key="qr_x_num", on_change=sync, args=("qr_x_num","qr_x_slider"))
-    qr_y = st.slider("QR Y (px)", 0, 2400, st.session_state["qr_y_slider"],
-                     key="qr_y_slider", on_change=sync, args=("qr_y_slider","qr_y_num"))
-    qr_y_num = st.number_input("QR Y (px)", 0, 2400, st.session_state["qr_y_num"],
+    qr_y = st.slider("QR Y ARRIBA/ABAJO(px)", 0, 2400, st.session_state["qr_y_slider"],
+                     key="er_y_slider", on_change=sync, args=("qr_y_slider","qr_y_num"))
+    qr_y_num = st.number_input("QR Y ARRIBA/ABAJO(px)", 0, 2400, st.session_state["qr_y_num"],
                                key="qr_y_num", on_change=sync, args=("qr_y_num","qr_y_slider"))
 
 with st.sidebar.expander("📝 Título y Subtítulo"):
@@ -89,22 +89,22 @@ with st.sidebar.expander("📝 Título y Subtítulo"):
                                    key="font_sub_num", on_change=sync, args=("font_sub_num","font_sub_slider"))
 
     spacing_title_sub = st.slider("Espaciado título-subtítulo (px)", 0, 200, 8)
-    title_x = st.slider("Título X (px)", 0, 2400, st.session_state["title_x_slider"],
+    title_x = st.slider("Título X IZQ/DERE(px)", 0, 2400, st.session_state["title_x_slider"],
                         key="title_x_slider", on_change=sync, args=("title_x_slider","title_x_num"))
-    title_x_num = st.number_input("Título X (px)", 0, 2400, st.session_state["title_x_num"],
+    title_x_num = st.number_input("Título X IZQ/DERE(px)", 0, 2400, st.session_state["title_x_num"],
                                   key="title_x_num", on_change=sync, args=("title_x_num","title_x_slider"))
-    title_y = st.slider("Título Y (px)", 0, 2400, st.session_state["title_y_slider"],
+    title_y = st.slider("Título Y ARRIBA/ABAJO(px)", 0, 2400, st.session_state["title_y_slider"],
                         key="title_y_slider", on_change=sync, args=("title_y_slider","title_y_num"))
-    title_y_num = st.number_input("Título Y (px)", 0, 2400, st.session_state["title_y_num"],
+    title_y_num = st.number_input("Título Y ARRIBA/ABAJO(px)", 0, 2400, st.session_state["title_y_num"],
                                   key="title_y_num", on_change=sync, args=("title_y_num","title_y_slider"))
 
-    subtitle_x = st.slider("Subtítulo X (px)", 0, 2400, st.session_state["subtitle_x_slider"],
+    subtitle_x = st.slider("Subtítulo X IZQ/DERE(px)", 0, 2400, st.session_state["subtitle_x_slider"],
                            key="subtitle_x_slider", on_change=sync, args=("subtitle_x_slider","subtitle_x_num"))
-    subtitle_x_num = st.number_input("Subtítulo X (px)", 0, 2400, st.session_state["subtitle_x_num"],
+    subtitle_x_num = st.number_input("Subtítulo X IZQ/DERE(px)", 0, 2400, st.session_state["subtitle_x_num"],
                                      key="subtitle_x_num", on_change=sync, args=("subtitle_x_num","subtitle_x_slider"))
-    subtitle_y = st.slider("Subtítulo Y (px)", 0, 2400, st.session_state["subtitle_y_slider"],
+    subtitle_y = st.slider("Subtítulo Y ARRIBA/ABAJO(px)", 0, 2400, st.session_state["subtitle_y_slider"],
                            key="subtitle_y_slider", on_change=sync, args=("subtitle_y_slider","subtitle_y_num"))
-    subtitle_y_num = st.number_input("Subtítulo Y (px)", 0, 2400, st.session_state["subtitle_y_num"],
+    subtitle_y_num = st.number_input("Subtítulo Y ARRIBA/ABAJO(px)", 0, 2400, st.session_state["subtitle_y_num"],
                                      key="subtitle_y_num", on_change=sync, args=("subtitle_y_num","subtitle_y_slider"))
 
     title_color = st.color_picker("Color del título", "#000000")
@@ -211,7 +211,7 @@ if map_file and (qr_link or qr_file):
         bg_color=bg_color, show_guides=show_guides,
         export_cut_line=export_cut_line
     )
-    st.subheader("🖼️ Previsualización A4")
+    st.subheader("🖼️ Previsualización")
     st.image(final_img, use_column_width=True)
 
     safe_name = sanitize_filename(title_text or default_name or "map_qr")
