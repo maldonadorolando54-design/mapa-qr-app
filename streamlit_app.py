@@ -25,17 +25,19 @@ default_name = os.path.splitext(map_file.name)[0] if map_file else ""
 title_text = st.text_input("Título principal", value=default_name)
 subtitle_text = st.text_input("Subtítulo", value="Cong. Brescia Española")
 
-# --- AJUSTES SIMPLIFICADOS CON SLIDER ÚNICO ---
+# --- AJUSTES SIMPLIFICADOS CON SLIDERS ---
 with st.sidebar.expander("📝 Título y Subtítulo"):
-    font_title = st.slider("Tamaño título (px)", 10, 200, 150)
+    font_title = st.slider("Tamaño título (px)", 10, 200, 150)  # se puede tipear directamente
     font_sub = st.slider("Tamaño subtítulo (px)", 10, 100, 100)
-    title_color = st.color_picker("Color título", "#000000")
-    subtitle_color = st.color_picker("Color subtítulo", "#555555")
     spacing_title_sub = st.slider("Espacio título-subtítulo (px)", 0, 100, 100)
     title_x = st.slider("Título X (px)", -500, 1000, 30)
     title_y = st.slider("Título Y (px)", -500, 1000, 50)
     subtitle_x = st.slider("Subtítulo X (px)", -500, 1000, 30)
     subtitle_y = st.slider("Subtítulo Y (px)", -500, 1000, 200)
+
+    # Colores al final del grupo
+    title_color = st.color_picker("Color título", "#000000")
+    subtitle_color = st.color_picker("Color subtítulo", "#555555")
 
 with st.sidebar.expander("🔳 QR"):
     qr_size = st.slider("Tamaño QR (px)", 50, 800, 550)
@@ -155,11 +157,4 @@ if map_file and (qr_link or qr_file):
         buf = io.BytesIO()
         final_img.save(buf, format="PNG")
         buf.seek(0)
-        st.download_button("📥 Descargar PNG", buf, f"{title_text}_A4.png", "image/png")
-
-        buf_pdf = io.BytesIO()
-        final_img.save(buf_pdf, format="PDF")
-        buf_pdf.seek(0)
-        st.download_button("📄 Descargar PDF", buf_pdf, f"{title_text}_A4.pdf", "application/pdf")
-else:
-    st.info("Sube mapa y proporciona QR (URL o imagen) para generar el diseño.")
+        st.download_button("📥 Descargar PNG", buf, f"{title_text}_A4.png
