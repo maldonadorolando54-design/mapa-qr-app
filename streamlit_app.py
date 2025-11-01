@@ -122,49 +122,53 @@ def compose_layout(title, subtitle, map_img, qr_img,
         draw.text((text_x, top_y + tb[3]-tb[1] + spacing_title_sub), subtitle, fill=subtitle_color, font=font_s)
 
     # Bloque QR + Mapa
-    qr_img = qr_img.resize((qr_size, qr_size), Image.LANCZOS)
-    map_img = map_img.resize((int(map_img.width*map_scale/100), int(map_img.height*map_scale/100)), Image.LANCZOS)
-    qr_x = margin_px + block_x_offset
-    qr_y = top_y + tb[3]-tb[1] + spacing_title_sub + block_y_offset
-    map_x = a4_w - margin_px - map_img.width + block_x_offset
-    map_y = qr_y  # alineado con el QR
-    canvas_prev.paste(qr_img, (qr_x, qr_y), qr_img)
-    canvas_prev.paste(map_img, (map_x, map_y), map_img)
-    canvas_final.paste(qr_img, (qr_x, qr_y), qr_img)
-    canvas_final.paste(map_img, (map_x, map_y), map_img)
+    if qr_img and map_img:
+        qr_img = qr_img.resize((qr_size, qr_size), Image.LANCZOS)
+        map_img = map_img.resize((int(map_img.width*map_scale/100), int(map_img.height*map_scale/100)), Image.LANCZOS)
+        qr_x = margin_px + block_x_offset
+        qr_y = top_y + tb[3]-tb[1] + spacing_title_sub + block_y_offset
+        map_x = a4_w - margin_px - map_img.width + block_x_offset
+        map_y = qr_y  # alineado con el QR
+        for canvas in [canvas_prev, canvas_final]:
+            canvas.paste(qr_img, (qr_x, qr_y), qr_img)
+            canvas.paste(map_img, (map_x, map_y), map_img)
 
-    return Image.new("RGB", canvas_prev.size, bg_color), Image.new("RGB", canvas_final.size, bg_color)
+    return canvas_prev.convert("RGB"), canvas_final.convert("RGB")
 
 # --- GENERACIÓN ---
 if map_file and (qr_link or qr_file):
     map_img = load_image(map_file)
     if qr_link:
         qr_img = generate_qr_image(qr_link, qr_size, qr_error_correction.split()[0])
-    else:
+    elif qr_file:
         qr_img = load_image(qr_file)
+    else:
+        st.warning("Proporciona URL o imagen QR")
+        qr_img = None
 
-    preview, export = compose_layout(title_text, subtitle_text, map_img, qr_img,
-                                     dpi=dpi, margin_px=margin_px,
-                                     font_title=font_title, font_sub=font_sub,
-                                     title_color=title_color, subtitle_color=subtitle_color,
-                                     spacing_title_sub=spacing_title_sub,
-                                     title_x_offset=title_x_offset, title_y_offset=title_y_offset,
-                                     block_x_offset=block_x_offset, block_y_offset=block_y_offset,
-                                     qr_size=qr_size, map_scale=map_scale,
-                                     bg_color=bg_color,
-                                     show_guides=show_guides, export_cut_line=export_cut_line)
+    if qr_img:
+        preview, export = compose_layout(title_text, subtitle_text, map_img, qr_img,
+                                         dpi=dpi, margin_px=margin_px,
+                                         font_title=font_title, font_sub=font_sub,
+                                         title_color=title_color, subtitle_color=subtitle_color,
+                                         spacing_title_sub=spacing_title_sub,
+                                         title_x_offset=title_x_offset, title_y_offset=title_y_offset,
+                                         block_x_offset=block_x_offset, block_y_offset=block_y_offset,
+                                         qr_size=qr_size, map_scale=map_scale,
+                                         bg_color=bg_color,
+                                         show_guides=show_guides, export_cut_line=export_cut_line)
 
-    st.subheader("🖼️ Previsualización")
-    st.image(preview, use_column_width=True)
+        st.subheader("🖼️ Previsualización")
+        st.image(preview, use_column_width=True)
 
-    buf = io.BytesIO()
-    export.save(buf, format="PNG")
-    buf.seek(0)
-    st.download_button("📥 Descargar PNG", buf, f"{title_text}_A4.png", "image/png")
+        buf = io.BytesIO()
+        export.save(buf, format="PNG")
+        buf.seek(0)
+        st.download_button("📥 Descargar PNG", buf, f"{title_text}_A4.png", "image/png")
 
-    buf_pdf = io.BytesIO()
-    export.save(buf_pdf, format="PDF")
-    buf_pdf.seek(0)
-    st.download_button("📄 Descargar PDF", buf_pdf, f"{title_text}_A4.pdf", "application/pdf")
+        buf_pdf = io.BytesIO()
+        export.save(buf_pdf, format="PDF")
+        buf_pdf.seek(0)
+        st.download_button("📄 Descargar PDF", buf_pdf, f"{title_text}_A4.pdf", "application/pdf")
 else:
     st.info("Sube mapa y proporciona QR (URL o imagen) para generar el diseño.")
