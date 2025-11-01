@@ -33,17 +33,17 @@ with st.sidebar.expander("🗺️ Mapa"):
 
 with st.sidebar.expander("🔳 QR"):
     qr_size = st.slider("Tamaño QR (px)", 50, 800, 550)
-    qr_x = st.slider("QR X (px)", 0, 1200, 30)
-    qr_y = st.slider("QR Y (px)", 0, 1200, 950)
+    qr_x = st.slider("QR IZQ/DER(px)", 0, 1200, 30)
+    qr_y = st.slider("QR ARRIBA/ABAJO(px)", 0, 1200, 950)
 
 with st.sidebar.expander("📝 Título y Subtítulo"):
     font_title = st.slider("Tamaño título (px)", 10, 200, 150)
     font_sub = st.slider("Tamaño subtítulo (px)", 10, 100, 100)
     spacing_title_sub = st.slider("Espacio título-subtítulo (px)", 0, 100, 100)
-    title_x = st.slider("Título X (px)", 0, 1200, 30)
-    title_y = st.slider("Título Y (px)", 0, 1200, 50)
-    subtitle_x = st.slider("Subtítulo X (px)", 0, 1200, 30)
-    subtitle_y = st.slider("Subtítulo Y (px)", 0, 1200, 200)
+    title_x = st.slider("Título IZQ/DER(px)", 0, 1200, 30)
+    title_y = st.slider("Título ARRIBA/ABAJO(px)", 0, 1200, 50)
+    subtitle_x = st.slider("Subtítulo IZQ/DER(px)", 0, 1200, 30)
+    subtitle_y = st.slider("Subtítulo ARRIBA/ABAJO(px)", 0, 1200, 200)
 
     # Colores al final del grupo
     title_color = st.color_picker("Color título", "#000000")
