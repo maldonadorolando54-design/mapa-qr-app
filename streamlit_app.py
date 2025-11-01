@@ -25,64 +25,27 @@ default_name = os.path.splitext(map_file.name)[0] if map_file else ""
 title_text = st.text_input("Título principal", value=default_name)
 subtitle_text = st.text_input("Subtítulo", value="Cong. Brescia Española")
 
-# --- AJUSTES ---
+# --- AJUSTES SIMPLIFICADOS CON SLIDER ÚNICO ---
 with st.sidebar.expander("📝 Título y Subtítulo"):
     font_title = st.slider("Tamaño título (px)", 10, 200, 150)
-    font_title_input = st.number_input("Tamaño título exacto (px)", 10, 200, 150)
-    font_title = font_title_input
-
     font_sub = st.slider("Tamaño subtítulo (px)", 10, 100, 100)
-    font_sub_input = st.number_input("Tamaño subtítulo exacto (px)", 10, 100, 100)
-    font_sub = font_sub_input
-
     title_color = st.color_picker("Color título", "#000000")
     subtitle_color = st.color_picker("Color subtítulo", "#555555")
-
-    spacing_title_sub = st.slider("Espacio entre título y subtítulo (px)", 0, 100, 100)
-    spacing_title_sub_input = st.number_input("Espacio exacto (px)", 0, 100, 100)
-    spacing_title_sub = spacing_title_sub_input
-
+    spacing_title_sub = st.slider("Espacio título-subtítulo (px)", 0, 100, 100)
     title_x = st.slider("Título X (px)", -500, 1000, 30)
-    title_x_input = st.number_input("Título X exacto (px)", -500, 1000, 30)
-    title_x = title_x_input
-
     title_y = st.slider("Título Y (px)", -500, 1000, 50)
-    title_y_input = st.number_input("Título Y exacto (px)", -500, 1000, 50)
-    title_y = title_y_input
-
     subtitle_x = st.slider("Subtítulo X (px)", -500, 1000, 30)
-    subtitle_x_input = st.number_input("Subtítulo X exacto (px)", -500, 1000, 30)
-    subtitle_x = subtitle_x_input
-
     subtitle_y = st.slider("Subtítulo Y (px)", -500, 1000, 200)
-    subtitle_y_input = st.number_input("Subtítulo Y exacto (px)", -500, 1000, 200)
-    subtitle_y = subtitle_y_input
 
 with st.sidebar.expander("🔳 QR"):
     qr_size = st.slider("Tamaño QR (px)", 50, 800, 550)
-    qr_size_input = st.number_input("Tamaño QR exacto (px)", 50, 800, 550)
-    qr_size = qr_size_input
-
     qr_x = st.slider("QR X (px)", -500, 1000, 30)
-    qr_x_input = st.number_input("QR X exacto (px)", -500, 1000, 30)
-    qr_x = qr_x_input
-
     qr_y = st.slider("QR Y (px)", -500, 1000, 950)
-    qr_y_input = st.number_input("QR Y exacto (px)", -500, 1000, 950)
-    qr_y = qr_y_input
 
 with st.sidebar.expander("🗺️ Mapa"):
     map_scale = st.slider("Escala mapa (%)", 10, 300, 157)
-    map_scale_input = st.number_input("Escala exacta (%)", 10, 300, 157)
-    map_scale = map_scale_input
-
     map_x = st.slider("Mapa X (px)", -500, 1000, 600)
-    map_x_input = st.number_input("Mapa X exacto (px)", -500, 1000, 600)
-    map_x = map_x_input
-
     map_y = st.slider("Mapa Y (px)", -500, 1000, 600)
-    map_y_input = st.number_input("Mapa Y exacto (px)", -500, 1000, 600)
-    map_y = map_y_input
 
 with st.sidebar.expander("Opciones generales"):
     bg_color = st.color_picker("Color de fondo", "#ffffff")
