@@ -7,8 +7,8 @@ try:
 except Exception:
     qrcode = None
 
-st.set_page_config(page_title="Mapa + QR — Layout inicial", layout="centered")
-st.title("🗺️ Mapa + QR — Layout inicial preconfigurado")
+st.set_page_config(page_title="Mapa + QR — Layout seguro", layout="centered")
+st.title("🗺️ Mapa + QR — Ajuste máximo al lienzo")
 
 if qrcode is None:
     st.error("Instala `qrcode` con `pip install qrcode[pil] Pillow` para usar QR desde URL.")
@@ -50,7 +50,6 @@ with st.sidebar.expander("🗺️ Mapa"):
 with st.sidebar.expander("Opciones generales"):
     bg_color = st.color_picker("Color de fondo", "#ffffff")
     dpi = st.selectbox("Resolución A4 (DPI)", [150,200,300], index=2)
-    margin_px = st.number_input("Margen lateral (px)", 0, 200, 80)
     show_guides = st.checkbox("Mostrar guías", True)
     export_cut_line = st.checkbox("Incluir línea de corte (mitad superior)", True)
     qr_error_correction = st.selectbox("Corrección de error QR",
@@ -87,6 +86,13 @@ def compose_layout(title, subtitle, map_img, qr_img,
     canvas = Image.new("RGBA",(a4_w,a4_h),bg_color)
     draw = ImageDraw.Draw(canvas)
 
+    # Fuentes
+    try:
+        font_b = ImageFont.truetype("DejaVuSans-Bold.ttf", font_title)
+        font_s = ImageFont.truetype("DejaVuSans.ttf", font_sub)
+    except:
+        font_b, font_s = ImageFont.load_default(), ImageFont.load_default()
+
     # Guías
     if show_guides:
         draw.rectangle([(0,0),(a4_w-1,a4_h-1)], outline=(0,100,255), width=3)
@@ -101,13 +107,6 @@ def compose_layout(title, subtitle, map_img, qr_img,
             draw.line([(x,dash_y),(min(x+dash_len,a4_w),dash_y)], fill=(0,0,0), width=1)
             x+=dash_len+gap
 
-    # Fuentes
-    try:
-        font_b = ImageFont.truetype("DejaVuSans-Bold.ttf", font_title)
-        font_s = ImageFont.truetype("DejaVuSans.ttf", font_sub)
-    except:
-        font_b, font_s = ImageFont.load_default(), ImageFont.load_default()
-
     # Título y subtítulo
     draw.text(title_pos, title, fill=title_color, font=font_b)
     draw.text(subtitle_pos, subtitle, fill=subtitle_color, font=font_s)
@@ -115,12 +114,17 @@ def compose_layout(title, subtitle, map_img, qr_img,
     # QR
     if qr_img:
         qr_img_resized = qr_img.resize((qr_size, qr_size), Image.LANCZOS)
-        canvas.paste(qr_img_resized, qr_pos, qr_img_resized)
+        # Limitar posición para que no se salga del A4
+        qr_x_safe = max(0, min(qr_pos[0], a4_w - qr_img_resized.width))
+        qr_y_safe = max(0, min(qr_pos[1], a4_h - qr_img_resized.height))
+        canvas.paste(qr_img_resized, (qr_x_safe, qr_y_safe), qr_img_resized)
 
     # Mapa
     if map_img:
         map_img_resized = map_img.resize((int(map_img.width*map_scale/100), int(map_img.height*map_scale/100)), Image.LANCZOS)
-        canvas.paste(map_img_resized, map_pos, map_img_resized)
+        map_x_safe = max(0, min(map_pos[0], a4_w - map_img_resized.width))
+        map_y_safe = max(0, min(map_pos[1], a4_h - map_img_resized.height))
+        canvas.paste(map_img_resized, (map_x_safe, map_y_safe), map_img_resized)
 
     return canvas.convert("RGB")
 
@@ -152,11 +156,4 @@ if map_file and (qr_link or qr_file):
         buf = io.BytesIO()
         final_img.save(buf, format="PNG")
         buf.seek(0)
-        st.download_button("📥 Descargar PNG", buf, f"{title_text}_A4.png", "image/png")
-
-        buf_pdf = io.BytesIO()
-        final_img.save(buf_pdf, format="PDF")
-        buf_pdf.seek(0)
-        st.download_button("📄 Descargar PDF", buf_pdf, f"{title_text}_A4.pdf", "application/pdf")
-else:
-    st.info("Sube mapa y proporciona QR (URL o imagen) para generar el diseño.")
+        st.download_button("📥 Descargar PNG", buf, f"{title_text}_A4
