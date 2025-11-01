@@ -7,8 +7,8 @@ try:
 except Exception:
     qrcode = None
 
-st.set_page_config(page_title="Mapa + QR — Layout absoluto", layout="centered")
-st.title("🗺️ Mapa + QR — sliders y números sincronizados")
+st.set_page_config(page_title="Mapa + QR + URL", layout="centered")
+st.title("🗺️ Mapa + QR + URL")
 
 if qrcode is None:
     st.error("Instala `qrcode` con `pip install qrcode[pil] Pillow` para usar QR desde URL.")
@@ -50,18 +50,18 @@ title_text = st.text_input("Título principal", value=default_name)
 subtitle_text = st.text_input("Subtítulo", value="Cong. Brescia Española")
 
 # ---------- Controles sincronizados ----------
-with st.sidebar.expander("🗺️ Mapa"):
+with st.sidebar.expander("🗺️ MAPA"):
     map_scale = st.slider("Escala mapa (%)", 10, 300, st.session_state["map_scale_slider"],
                           key="map_scale_slider", on_change=sync, args=("map_scale_slider","map_scale_num"))
     map_scale_num = st.number_input("Escala mapa (%)", 10, 300, st.session_state["map_scale_num"],
                                     key="map_scale_num", on_change=sync, args=("map_scale_num","map_scale_slider"))
-    map_x = st.slider("Mapa X (px)", 0, 2400, st.session_state["map_x_slider"],
+    map_x = st.slider("Mapa X IZQ/DER(px)", 0, 2400, st.session_state["map_x_slider"],
                       key="map_x_slider", on_change=sync, args=("map_x_slider","map_x_num"))
-    map_x_num = st.number_input("Mapa X (px)", 0, 2400, st.session_state["map_x_num"],
+    map_x_num = st.number_input("Mapa X IZQ/DER(px)", 0, 2400, st.session_state["map_x_num"],
                                 key="map_x_num", on_change=sync, args=("map_x_num","map_x_slider"))
-    map_y = st.slider("Mapa Y (px)", 0, 2400, st.session_state["map_y_slider"],
+    map_y = st.slider("Mapa Y ARRIBA/ABAJO(px)", 0, 2400, st.session_state["map_y_slider"],
                       key="map_y_slider", on_change=sync, args=("map_y_slider","map_y_num"))
-    map_y_num = st.number_input("Mapa Y (px)", 0, 2400, st.session_state["map_y_num"],
+    map_y_num = st.number_input("Mapa Y ARRIBA/ABAJO(px)", 0, 2400, st.session_state["map_y_num"],
                                 key="map_y_num", on_change=sync, args=("map_y_num","map_y_slider"))
 
 with st.sidebar.expander("🔳 Código QR"):
