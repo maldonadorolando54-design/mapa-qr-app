@@ -7,8 +7,8 @@ try:
 except Exception:
     qrcode = None
 
-st.set_page_config(page_title="Mapa + QR — Control total", layout="centered")
-st.title("🗺️ Mapa + QR — Control total e independiente")
+st.set_page_config(page_title="Mapa + QR — Layout inicial", layout="centered")
+st.title("🗺️ Mapa + QR — Layout inicial preconfigurado")
 
 if qrcode is None:
     st.error("Instala `qrcode` con `pip install qrcode[pil] Pillow` para usar QR desde URL.")
@@ -35,17 +35,17 @@ with st.sidebar.expander("📝 Título y Subtítulo"):
     title_x = st.number_input("Título X (px)", -500, 1000, 0)
     title_y = st.number_input("Título Y (px)", -500, 1000, 0)
     subtitle_x = st.number_input("Subtítulo X (px)", -500, 1000, 0)
-    subtitle_y = st.number_input("Subtítulo Y (px)", -500, 1000, 0)
+    subtitle_y = st.number_input("Subtítulo Y (px)", -500, 1000, 50)
 
 with st.sidebar.expander("🔳 QR"):
     qr_size = st.number_input("Tamaño QR (px)", 50, 800, 250)
-    qr_x = st.number_input("QR X (px)", -500, 1000, 0)
-    qr_y = st.number_input("QR Y (px)", -500, 1000, 0)
+    qr_x = st.number_input("QR X (px)", -500, 1000, 50)
+    qr_y = st.number_input("QR Y (px)", -500, 1000, 600)
 
 with st.sidebar.expander("🗺️ Mapa"):
-    map_scale = st.number_input("Escala mapa (%)", 10, 300, 100)
-    map_x = st.number_input("Mapa X (px)", -500, 1000, 0)
-    map_y = st.number_input("Mapa Y (px)", -500, 1000, 0)
+    map_scale = st.number_input("Escala mapa (%)", 10, 300, 70)
+    map_x = st.number_input("Mapa X (px)", -500, 1000, 400)
+    map_y = st.number_input("Mapa Y (px)", -500, 1000, 150)
 
 with st.sidebar.expander("Opciones generales"):
     bg_color = st.color_picker("Color de fondo", "#ffffff")
@@ -110,7 +110,7 @@ def compose_layout(title, subtitle, map_img, qr_img,
 
     # Título y subtítulo
     draw.text(title_pos, title, fill=title_color, font=font_b)
-    draw.text((subtitle_pos[0], subtitle_pos[1]), subtitle, fill=subtitle_color, font=font_s)
+    draw.text(subtitle_pos, subtitle, fill=subtitle_color, font=font_s)
 
     # QR
     if qr_img:
@@ -135,27 +135,28 @@ if map_file and (qr_link or qr_file):
         st.warning("Proporciona URL o imagen QR")
         qr_img = None
 
-    final_img = compose_layout(
-        title_text, subtitle_text, map_img, qr_img,
-        dpi=dpi, font_title=font_title, font_sub=font_sub,
-        title_color=title_color, subtitle_color=subtitle_color, spacing_title_sub=spacing_title_sub,
-        title_pos=(title_x, title_y), subtitle_pos=(subtitle_x, subtitle_y),
-        qr_pos=(qr_x, qr_y), qr_size=qr_size,
-        map_pos=(map_x, map_y), map_scale=map_scale,
-        bg_color=bg_color, show_guides=show_guides, export_cut_line=export_cut_line
-    )
+    if qr_img:
+        final_img = compose_layout(
+            title_text, subtitle_text, map_img, qr_img,
+            dpi=dpi, font_title=font_title, font_sub=font_sub,
+            title_color=title_color, subtitle_color=subtitle_color, spacing_title_sub=spacing_title_sub,
+            title_pos=(title_x, title_y), subtitle_pos=(subtitle_x, subtitle_y),
+            qr_pos=(qr_x, qr_y), qr_size=qr_size,
+            map_pos=(map_x, map_y), map_scale=map_scale,
+            bg_color=bg_color, show_guides=show_guides, export_cut_line=export_cut_line
+        )
 
-    st.subheader("🖼️ Previsualización")
-    st.image(final_img, use_column_width=True)
+        st.subheader("🖼️ Previsualización")
+        st.image(final_img, use_column_width=True)
 
-    buf = io.BytesIO()
-    final_img.save(buf, format="PNG")
-    buf.seek(0)
-    st.download_button("📥 Descargar PNG", buf, f"{title_text}_A4.png", "image/png")
+        buf = io.BytesIO()
+        final_img.save(buf, format="PNG")
+        buf.seek(0)
+        st.download_button("📥 Descargar PNG", buf, f"{title_text}_A4.png", "image/png")
 
-    buf_pdf = io.BytesIO()
-    final_img.save(buf_pdf, format="PDF")
-    buf_pdf.seek(0)
-    st.download_button("📄 Descargar PDF", buf_pdf, f"{title_text}_A4.pdf", "application/pdf")
+        buf_pdf = io.BytesIO()
+        final_img.save(buf_pdf, format="PDF")
+        buf_pdf.seek(0)
+        st.download_button("📄 Descargar PDF", buf_pdf, f"{title_text}_A4.pdf", "application/pdf")
 else:
     st.info("Sube mapa y proporciona QR (URL o imagen) para generar el diseño.")
