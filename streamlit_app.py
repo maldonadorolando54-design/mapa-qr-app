@@ -1,10 +1,9 @@
 import streamlit as st
 from PIL import Image, ImageDraw, ImageFont
-import io, os
-
+import io, base64
 try:
     import qrcode
-except Exception:
+except:
     qrcode = None
 
 from streamlit_drawable_canvas import st_canvas
@@ -12,8 +11,11 @@ from streamlit_drawable_canvas import st_canvas
 st.set_page_config(page_title="Mapa + QR — Drag & Drop", layout="centered")
 st.title("🗺️ Mapa + QR — Mueve elementos con el mouse")
 
-if qrcode is None:
-    st.error("Instala `qrcode` con `pip install qrcode[pil] Pillow` para usar QR desde URL.")
+# --- Función para convertir PIL a base64 ---
+def pil_to_base64(img):
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
 
 # --- INPUTS ---
 map_file = st.file_uploader("🗺️ Imagen del mapa", type=["png","jpg","jpeg"])
@@ -22,7 +24,6 @@ qr_file = st.file_uploader("🔳 Imagen QR (opcional si hay URL)", type=["png","
 title_text = st.text_input("Título principal", value="Título de ejemplo")
 subtitle_text = st.text_input("Subtítulo", value="Subtítulo de ejemplo")
 
-# --- AJUSTES ---
 font_title_size = st.slider("Tamaño título (px)", 10, 200, 150)
 font_sub_size = st.slider("Tamaño subtítulo (px)", 10, 100, 50)
 title_color = st.color_picker("Color título", "#000000")
@@ -50,70 +51,95 @@ def generate_qr_image(url, qr_px, error_level="QUARTILE"):
     return img.resize((qr_px, qr_px), Image.LANCZOS)
 
 # --- CARGA DE IMÁGENES ---
+map_img_resized = None
 if map_file:
     map_img = load_image(map_file)
     map_img_resized = map_img.resize((int(map_img.width*map_scale/100),
                                       int(map_img.height*map_scale/100)), Image.LANCZOS)
-else:
-    map_img_resized = None
 
+qr_img = None
 if qr_link:
     qr_img = generate_qr_image(qr_link, qr_size)
 elif qr_file:
     qr_img = load_image(qr_file).resize((qr_size, qr_size), Image.LANCZOS)
-else:
-    qr_img = None
 
-# --- CANVAS PARA DRAG & DROP ---
+# --- PREPARAR ELEMENTOS PARA EL CANVAS ---
+initial_drawing = []
+
+if qr_img:
+    initial_drawing.append({
+        "type": "image",
+        "x": 40,
+        "y": 900,
+        "width": qr_img.width,
+        "height": qr_img.height,
+        "src": pil_to_base64(qr_img)
+    })
+
+if map_img_resized:
+    initial_drawing.append({
+        "type": "image",
+        "x": 600,
+        "y": 150,
+        "width": map_img_resized.width,
+        "height": map_img_resized.height,
+        "src": pil_to_base64(map_img_resized)
+    })
+
+initial_drawing.append({
+    "type": "text",
+    "x": 80,
+    "y": 50,
+    "text": title_text,
+    "color": title_color,
+    "fontSize": font_title_size
+})
+
+initial_drawing.append({
+    "type": "text",
+    "x": 80,
+    "y": 150,
+    "text": subtitle_text,
+    "color": subtitle_color,
+    "fontSize": font_sub_size
+})
+
+# --- CANVAS ---
 canvas_width = 800
 canvas_height = 1100
-canvas = st_canvas(
+canvas_result = st_canvas(
     fill_color="rgba(255, 255, 255, 0)",
     stroke_width=1,
     background_color="#FFFFFF",
     width=canvas_width,
     height=canvas_height,
-    drawing_mode="transform",  # permite mover imágenes/texto
+    drawing_mode="transform",
     key="canvas",
-    initial_drawing=[  # elementos iniciales
-        {
-            "type": "image",
-            "x": 40,
-            "y": 900,
-            "width": qr_img.width if qr_img else 100,
-            "height": qr_img.height if qr_img else 100,
-            "src": qr_img
-        },
-        {
-            "type": "image",
-            "x": 600,
-            "y": 150,
-            "width": map_img_resized.width if map_img_resized else 100,
-            "height": map_img_resized.height if map_img_resized else 100,
-            "src": map_img_resized
-        },
-        {
-            "type": "text",
-            "x": 80,
-            "y": 50,
-            "text": title_text,
-            "color": title_color,
-            "fontSize": font_title_size
-        },
-        {
-            "type": "text",
-            "x": 80,
-            "y": 150,
-            "text": subtitle_text,
-            "color": subtitle_color,
-            "fontSize": font_sub_size
-        }
-    ]
+    initial_drawing=initial_drawing
 )
 
 # --- EXPORTAR PNG ---
 if st.button("📥 Exportar PNG"):
-    img = Image.new("RGBA", (canvas_width, canvas_height), "#FFFFFF")
-    draw = ImageDraw.Draw(img)
-    # Agregar manualmente texto y QR/mapa si es necesario
-    st.image(img)
+    final_img = Image.new("RGBA", (canvas_width, canvas_height), "#FFFFFF")
+    draw = ImageDraw.Draw(final_img)
+
+    # Dibujar manualmente los elementos para PNG final
+    for el in initial_drawing:
+        if el["type"] == "text":
+            try:
+                font = ImageFont.truetype("DejaVuSans-Bold.ttf", el["fontSize"])
+            except:
+                font = ImageFont.load_default()
+            draw.text((el["x"], el["y"]), el["text"], fill=el["color"], font=font)
+        elif el["type"] == "image":
+            # Convertir base64 a PIL
+            header, encoded = el["src"].split(",",1)
+            img_bytes = base64.b64decode(encoded)
+            img = Image.open(io.BytesIO(img_bytes))
+            img_resized = img.resize((el["width"], el["height"]))
+            final_img.paste(img_resized, (el["x"], el["y"]), img_resized)
+
+    buf = io.BytesIO()
+    final_img.save(buf, format="PNG")
+    buf.seek(0)
+    st.download_button("📥 Descargar PNG final", buf, f"{title_text}_A4.png", "image/png")
