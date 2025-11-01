@@ -9,13 +9,13 @@ except Exception:
 
 # --- CONFIGURACIÓN ---
 st.set_page_config(page_title="Mapa + QR (Diseño final)", layout="centered")
-st.title("🗺️ Mapa + QR — Estilo Institucional Final")
+st.title("🗺️ Mapa + QR — Control preciso de posiciones")
 
 st.markdown("""
-**Versión mejorada:**
-- Control total del título y subtítulo (color, posición, alineación, espaciado)  
+- Ajuste vertical solo para título y subtítulo  
+- Tamaños y posiciones en px precisos para QR y mapa  
 - Línea divisoria eliminada  
-- QR y mapa con misma lógica y guías opcionales
+- Guías opcionales en previsualización
 """)
 
 if qrcode is None:
@@ -43,26 +43,29 @@ subtitle = st.text_input("Subtítulo", value="Cong. Brescia Española")
 with st.sidebar.expander("⚙️ Ajustes generales", expanded=True):
     bg_color = st.color_picker("Color de fondo", "#ffffff")
     dpi = st.selectbox("Resolución (A4 DPI)", [150, 200, 300], index=2)
-    qr_size = st.slider("Tamaño QR (px)", 100, 600, 250)
     margin = st.slider("Margen lateral (px)", 20, 200, 80)
-    extra_space = st.slider("Espacio vertical entre título y QR (px)", 0, 400, 120)
-    map_offset_y = st.slider("Desplazamiento vertical del mapa (px)", 0, 600, 150)
     show_guides = st.checkbox("🧭 Mostrar guías en previsualización", value=True)
     export_cut_line = st.checkbox("📐 Incluir línea de corte (mitad superior) en exportación", value=True)
 
-with st.sidebar.expander("🎨 Estilo del texto", expanded=True):
+with st.sidebar.expander("🎨 Título y subtítulo"):
     font_title = st.slider("Tamaño título (px)", 20, 120, 70)
     font_sub = st.slider("Tamaño subtítulo (px)", 10, 60, 36)
     title_color = st.color_picker("Color del título", "#000000")
     subtitle_color = st.color_picker("Color del subtítulo", "#555555")
     spacing_title_sub = st.slider("Espacio entre título y subtítulo (px)", 0, 100, 10)
-    title_offset_y = st.slider("Ajuste vertical del bloque de texto (px)", -200, 400, 0)
+    title_offset_y = st.slider("Ajuste vertical solo título/subtítulo (px)", -200, 400, 0)
     text_align = st.selectbox("Alineación del texto", ["izquierda", "centro", "derecha"], index=0)
 
-with st.sidebar.expander("🔳 QR — Opciones avanzadas"):
+with st.sidebar.expander("🔳 QR"):
+    qr_size = st.slider("Tamaño QR (px)", 100, 600, 250)
+    qr_y_offset = st.slider("Posición vertical QR (px)", 0, 1200, 300)
     qr_error_correction = st.selectbox("Corrección de error QR",
-                                       ["LOW (7%)", "MEDIUM (15%)", "QUARTILE (25%)", "HIGH (30%)"],
-                                       index=2)
+                                       ["LOW (7%)", "MEDIUM (15%)", "QUARTILE (25%)", "HIGH (30%)"], index=2)
+
+with st.sidebar.expander("🗺️ Mapa"):
+    map_width_px = st.slider("Ancho mapa (px)", 100, 1200, 600)
+    map_height_px = st.slider("Alto mapa (px)", 100, 1200, 400)
+    map_y_offset = st.slider("Posición vertical mapa (px)", 0, 1200, 400)
 
 # --- FUNCIONES ---
 def load_image(file):
@@ -72,12 +75,10 @@ def load_image(file):
 def generate_qr_image_from_link(url, qr_px=250, error_level="QUARTILE"):
     if qrcode is None:
         raise RuntimeError("qrcode no está instalado")
-    ec_map = {
-        "LOW": qrcode.constants.ERROR_CORRECT_L,
-        "MEDIUM": qrcode.constants.ERROR_CORRECT_M,
-        "QUARTILE": qrcode.constants.ERROR_CORRECT_Q,
-        "HIGH": qrcode.constants.ERROR_CORRECT_H,
-    }
+    ec_map = {"LOW": qrcode.constants.ERROR_CORRECT_L,
+              "MEDIUM": qrcode.constants.ERROR_CORRECT_M,
+              "QUARTILE": qrcode.constants.ERROR_CORRECT_Q,
+              "HIGH": qrcode.constants.ERROR_CORRECT_H}
     ec = ec_map.get(error_level, qrcode.constants.ERROR_CORRECT_Q)
     qr = qrcode.QRCode(error_correction=ec, box_size=10, border=4)
     qr.add_data(url)
@@ -87,10 +88,10 @@ def generate_qr_image_from_link(url, qr_px=250, error_level="QUARTILE"):
 
 def compose_layout(map_img, qr_img, title, subtitle,
                    bg="#ffffff", font_title=70, font_sub=36,
-                   qr_px=250, margin_px=80, extra_space=120, map_offset_y=150,
-                   title_color="#000000", subtitle_color="#555555",
+                   qr_px=250, qr_y_offset=300, map_width_px=600, map_height_px=400,
+                   map_y_offset=400, title_color="#000000", subtitle_color="#555555",
                    spacing_title_sub=10, title_offset_y=0, text_align="izquierda",
-                   dpi=300, show_guides=False, export_cut_line=False):
+                   dpi=300, margin_px=80, show_guides=False, export_cut_line=False):
 
     a4_w = int(8.27 * dpi)
     a4_h = int(11.69 * dpi)
@@ -100,23 +101,22 @@ def compose_layout(map_img, qr_img, title, subtitle,
     mid_y = a4_h // 2
     dash_y = mid_y + 3
 
-    # Guías en preview
+    # Guías
     if show_guides:
         dp.rectangle([(0,0),(a4_w-1,a4_h-1)], outline=(0,100,255), width=3)
         dp.line([(0, mid_y),(a4_w, mid_y)], fill=(255,0,0), width=2)
-        dash_len, gap = 12, 8
+        dash_len, gap = 12,8
         x=0
         while x<a4_w:
-            dp.line([(x, dash_y),(min(x+dash_len,a4_w),dash_y)], fill=(160,32,240), width=2)
-            x += dash_len+gap
+            dp.line([(x,dash_y),(min(x+dash_len,a4_w),dash_y)], fill=(160,32,240), width=2)
+            x+=dash_len+gap
 
-    # Línea de corte en exportación
     if export_cut_line:
-        dash_len, gap = 12, 8
+        dash_len, gap = 12,8
         x=0
         while x<a4_w:
             df.line([(x,dash_y),(min(x+dash_len,a4_w),dash_y)], fill=(0,0,0), width=1)
-            x += dash_len+gap
+            x+=dash_len+gap
 
     # Fuentes
     try:
@@ -126,44 +126,37 @@ def compose_layout(map_img, qr_img, title, subtitle,
         font_bold = ImageFont.load_default()
         font_subt = ImageFont.load_default()
 
-    # Medidas texto
+    # Medidas
     tb = dp.textbbox((0,0), title, font=font_bold)
     sb = dp.textbbox((0,0), subtitle, font=font_subt)
     title_w, title_h = tb[2]-tb[0], tb[3]-tb[1]
     sub_w, sub_h = sb[2]-sb[0], sb[3]-sb[1]
 
-    # Alineación
-    if text_align == "izquierda":
+    if text_align=="izquierda":
         text_x = margin_px
-    elif text_align == "centro":
-        text_x = (a4_w - max(title_w, sub_w)) // 2
+    elif text_align=="centro":
+        text_x = (a4_w - max(title_w, sub_w))//2
     else:
         text_x = a4_w - margin_px - max(title_w, sub_w)
 
-    # Posición Y
-    top_y = int(a4_h * 0.08) + title_offset_y
-
-    # Escribir texto
+    # Escribir solo título/subtítulo con offset Y
+    top_y = int(a4_h*0.08)
     for draw in [dp, df]:
-        draw.text((text_x, top_y), title, fill=title_color, font=font_bold)
-        draw.text((text_x, top_y + title_h + spacing_title_sub),
-                  subtitle, fill=subtitle_color, font=font_subt)
+        draw.text((text_x, top_y + title_offset_y), title, fill=title_color, font=font_bold)
+        draw.text((text_x, top_y + title_offset_y + title_h + spacing_title_sub), subtitle, fill=subtitle_color, font=font_subt)
 
-    # QR y mapa
-    qr_y = top_y + title_h + sub_h + extra_space
+    # QR
     qr_img = qr_img.resize((qr_px, qr_px), Image.LANCZOS)
-    mw, mh = map_img.size
-    ratio = min((a4_w*0.55)/mw, (a4_h*0.45)/mh)
-    map_img = map_img.resize((int(mw*ratio), int(mh*ratio)), Image.LANCZOS)
     qr_x = margin_px
-    map_x = a4_w - margin_px - map_img.width
-    map_y = top_y + map_offset_y
-    canvas_prev.paste(qr_img, (qr_x, qr_y), qr_img)
-    canvas_final.paste(qr_img, (qr_x, qr_y), qr_img)
-    canvas_prev.paste(map_img, (map_x, map_y), map_img)
-    canvas_final.paste(map_img, (map_x, map_y), map_img)
+    canvas_prev.paste(qr_img, (qr_x, qr_y_offset), qr_img)
+    canvas_final.paste(qr_img, (qr_x, qr_y_offset), qr_img)
 
-    # Convertir a RGB
+    # Mapa
+    map_img = map_img.resize((map_width_px, map_height_px), Image.LANCZOS)
+    map_x = a4_w - margin_px - map_width_px
+    canvas_prev.paste(map_img, (map_x, map_y_offset), map_img)
+    canvas_final.paste(map_img, (map_x, map_y_offset), map_img)
+
     final_prev = Image.new("RGB", canvas_prev.size, bg)
     final_prev.paste(canvas_prev, mask=canvas_prev.split()[3])
     final_exp = Image.new("RGB", canvas_final.size, bg)
@@ -175,7 +168,7 @@ def compose_layout(map_img, qr_img, title, subtitle,
 if map_file and (qr_link or qr_file):
     map_img = load_image(map_file)
     if qr_link:
-        ec_map = {"LOW (7%)": "LOW", "MEDIUM (15%)": "MEDIUM", "QUARTILE (25%)": "QUARTILE", "HIGH (30%)": "HIGH"}
+        ec_map = {"LOW (7%)":"LOW","MEDIUM (15%)":"MEDIUM","QUARTILE (25%)":"QUARTILE","HIGH (30%)":"HIGH"}
         ec = ec_map.get(qr_error_correction, "QUARTILE")
         qr_img = generate_qr_image_from_link(qr_link, qr_px=qr_size, error_level=ec)
     else:
@@ -184,10 +177,11 @@ if map_file and (qr_link or qr_file):
     preview, export = compose_layout(
         map_img, qr_img, name, subtitle,
         bg=bg_color, font_title=font_title, font_sub=font_sub,
-        qr_px=qr_size, margin_px=margin, extra_space=extra_space, map_offset_y=map_offset_y,
+        qr_px=qr_size, qr_y_offset=qr_y_offset,
+        map_width_px=map_width_px, map_height_px=map_height_px, map_y_offset=map_y_offset,
         title_color=title_color, subtitle_color=subtitle_color,
         spacing_title_sub=spacing_title_sub, title_offset_y=title_offset_y, text_align=text_align,
-        dpi=dpi, show_guides=show_guides, export_cut_line=export_cut_line
+        dpi=dpi, margin_px=margin, show_guides=show_guides, export_cut_line=export_cut_line
     )
 
     st.subheader("🖼️ Previsualización:")
