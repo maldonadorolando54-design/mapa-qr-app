@@ -8,10 +8,53 @@ except Exception:
     qrcode = None
 
 st.set_page_config(page_title="Mapa + QR — Layout absoluto editable", layout="centered")
-st.title("🗺️ Mapa + QR + URL + Posiciones absolutas")
+st.title("🗺️ Mapa + QR + URL + Posiciones absolutas (slider + escribir)")
 
 if qrcode is None:
     st.error("Instala `qrcode` con `pip install qrcode[pil] Pillow` para usar QR desde URL.")
+
+# --- Helper: slider sincronizado con number_input ---
+def synced_slider(label, key, min_value, max_value, value, step=1):
+    """
+    Crea un slider y un number_input sincronizados.
+    Devuelve el valor entero seleccionado.
+    """
+    # inicializar session_state si no existe
+    if f"{key}_val" not in st.session_state:
+        st.session_state[f"{key}_val"] = int(value)
+
+    def _on_slider_change(k=key):
+        st.session_state[f"{k}_val"] = int(st.session_state[f"{k}_slider"])
+
+    def _on_num_change(k=key):
+        st.session_state[f"{k}_val"] = int(st.session_state[f"{k}_num"])
+
+    col_slider, col_num = st.columns([4,1])
+    # slider (col_slider) - mostramos etiqueta aquí para claridad
+    col_slider.slider(
+        label,
+        min_value, max_value,
+        value=st.session_state[f"{key}_val"],
+        step=step,
+        format="%d",
+        key=f"{key}_slider",
+        on_change=_on_slider_change
+    )
+    # number_input (col_num)
+    col_num.number_input(
+        label="",
+        min_value=min_value,
+        max_value=max_value,
+        value=st.session_state[f"{key}_val"],
+        step=step,
+        format="%d",
+        key=f"{key}_num",
+        on_change=_on_num_change
+    )
+
+    # mantener consistencia: preferimos el valor almacenado en _val
+    return int(st.session_state[f"{key}_val"])
+
 
 # --- INPUTS ---
 col1, col2 = st.columns(2)
@@ -25,25 +68,27 @@ default_name = os.path.splitext(map_file.name)[0] if map_file else ""
 title_text = st.text_input("Título principal", value=default_name)
 subtitle_text = st.text_input("Subtítulo", value="Cong. Brescia Española")
 
-# --- AJUSTES CON SLIDERS EDITABLES ---
+# --- AJUSTES CON SLIDERS + número (sincronizados) ---
+st.sidebar.markdown("### Ajustes")
+
 with st.sidebar.expander("🗺️ Mapa"):
-    map_scale = st.slider("Escala mapa (%)", 10, 300, 157, step=1, format="%d")
-    map_x = st.slider("Mapa X IZQ/DER(px)", 0, 1200, 580, step=1, format="%d")
-    map_y = st.slider("Mapa Y ARRIBA/ABAJO(px)", 0, 1200, 600, step=1, format="%d")
+    map_scale = synced_slider("Escala mapa (%)", "map_scale", 10, 300, 157, step=1)
+    map_x = synced_slider("Mapa X IZQ/DER (px)", "map_x", 0, 1200, 580, step=1)
+    map_y = synced_slider("Mapa Y ARRIBA/ABAJO (px)", "map_y", 0, 1200, 150, step=1)
 
 with st.sidebar.expander("🔳 QR"):
-    qr_size = st.slider("Tamaño QR (px)", 50, 800, 550, step=1, format="%d")
-    qr_x = st.slider("QR X IZQ/DER(px)", 0, 1200, 30, step=1, format="%d")
-    qr_y = st.slider("QR Y ARRIBA/ABAJO(px)", 0, 1200, 950, step=1, format="%d")
+    qr_size = synced_slider("Tamaño QR (px)", "qr_size", 50, 800, 600, step=1)
+    qr_x = synced_slider("QR X IZQ/DER (px)", "qr_x", 0, 1200, 40, step=1)
+    qr_y = synced_slider("QR Y ARRIBA/ABAJO (px)", "qr_y", 0, 1200, 900, step=1)
 
 with st.sidebar.expander("📝 Título y Subtítulo"):
-    font_title = st.slider("Tamaño título (px)", 10, 200, 150, step=1, format="%d")
-    font_sub = st.slider("Tamaño subtítulo (px)", 10, 100, 100, step=1, format="%d")
-    spacing_title_sub = st.slider("Espacio título-subtítulo (px)", 0, 100, 100, step=1, format="%d")
-    title_x = st.slider("Título X IZQ/DER(px)", 0, 1200, 30, step=1, format="%d")
-    title_y = st.slider("Título Y ARRIBA/ABAJO(px)", 0, 1200, 50, step=1, format="%d")
-    subtitle_x = st.slider("Subtítulo X IZQ/DER(px)", 0, 1200, 30, step=1, format="%d")
-    subtitle_y = st.slider("Subtítulo Y ARRIBA/ABAJO(px)", 0, 1200, 200, step=1, format="%d")
+    font_title = synced_slider("Tamaño título (px)", "font_title", 10, 200, 150, step=1)
+    font_sub = synced_slider("Tamaño subtítulo (px)", "font_sub", 10, 100, 50, step=1)
+    spacing_title_sub = synced_slider("Espacio título-subtítulo (px)", "spacing_title_sub", 0, 200, 20, step=1)
+    title_x = synced_slider("Título X IZQ/DER (px)", "title_x", 0, 1200, 80, step=1)
+    title_y = synced_slider("Título Y ARRIBA/ABAJO (px)", "title_y", 0, 1200, 50, step=1)
+    subtitle_x = synced_slider("Subtítulo X IZQ/DER (px)", "subtitle_x", 0, 1200, 80, step=1)
+    subtitle_y = synced_slider("Subtítulo Y ARRIBA/ABAJO (px)", "subtitle_y", 0, 1200, 150, step=1)
 
     # Colores al final del grupo
     title_color = st.color_picker("Color título", "#000000")
