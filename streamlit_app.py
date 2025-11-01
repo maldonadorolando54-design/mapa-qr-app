@@ -114,7 +114,6 @@ def compose_layout(title, subtitle, map_img, qr_img,
     # QR
     if qr_img:
         qr_img_resized = qr_img.resize((qr_size, qr_size), Image.LANCZOS)
-        # Limitar posición para que no se salga del A4
         qr_x_safe = max(0, min(qr_pos[0], a4_w - qr_img_resized.width))
         qr_y_safe = max(0, min(qr_pos[1], a4_h - qr_img_resized.height))
         canvas.paste(qr_img_resized, (qr_x_safe, qr_y_safe), qr_img_resized)
@@ -156,4 +155,9 @@ if map_file and (qr_link or qr_file):
         buf = io.BytesIO()
         final_img.save(buf, format="PNG")
         buf.seek(0)
-        st.download_button("📥 Descargar PNG", buf, f"{title_text}_A4
+        st.download_button("📥 Descargar PNG", buf, f"{title_text}_A4.png", "image/png")
+
+        buf_pdf = io.BytesIO()
+        final_img.save(buf_pdf, format="PDF")
+        buf_pdf.seek(0)
+        st.download_button("📄 Descargar PDF", buf_pdf, f"{title_text}_A4.pdf", "application/pdf")
