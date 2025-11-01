@@ -127,7 +127,7 @@ def compose_layout(title, subtitle, map_img, qr_img,
     qr_x = margin_px + block_x_offset
     qr_y = top_y + tb[3]-tb[1] + spacing_title_sub + block_y_offset
     map_x = a4_w - margin_px - map_img.width + block_x_offset
-    map_y = qr_y + block_y_offset
+    map_y = qr_y  # alineado con el QR
     canvas_prev.paste(qr_img, (qr_x, qr_y), qr_img)
     canvas_prev.paste(map_img, (map_x, map_y), map_img)
     canvas_final.paste(qr_img, (qr_x, qr_y), qr_img)
