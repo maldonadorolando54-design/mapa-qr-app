@@ -27,25 +27,62 @@ subtitle_text = st.text_input("Subtítulo", value="Cong. Brescia Española")
 
 # --- AJUSTES ---
 with st.sidebar.expander("📝 Título y Subtítulo"):
-    font_title = st.number_input("Tamaño título (px)", 10, 200, 70)
-    font_sub = st.number_input("Tamaño subtítulo (px)", 10, 100, 36)
+    font_title = st.slider("Tamaño título (px)", 10, 200, 150)
+    font_title_input = st.number_input("Tamaño título exacto (px)", 10, 200, 150)
+    font_title = font_title_input
+
+    font_sub = st.slider("Tamaño subtítulo (px)", 10, 100, 100)
+    font_sub_input = st.number_input("Tamaño subtítulo exacto (px)", 10, 100, 100)
+    font_sub = font_sub_input
+
     title_color = st.color_picker("Color título", "#000000")
     subtitle_color = st.color_picker("Color subtítulo", "#555555")
-    spacing_title_sub = st.number_input("Espacio entre título y subtítulo (px)", 0, 100, 10)
-    title_x = st.number_input("Título X (px)", -500, 1000, 0)
-    title_y = st.number_input("Título Y (px)", -500, 1000, 0)
-    subtitle_x = st.number_input("Subtítulo X (px)", -500, 1000, 0)
-    subtitle_y = st.number_input("Subtítulo Y (px)", -500, 1000, 50)
+
+    spacing_title_sub = st.slider("Espacio entre título y subtítulo (px)", 0, 100, 100)
+    spacing_title_sub_input = st.number_input("Espacio exacto (px)", 0, 100, 100)
+    spacing_title_sub = spacing_title_sub_input
+
+    title_x = st.slider("Título X (px)", -500, 1000, 30)
+    title_x_input = st.number_input("Título X exacto (px)", -500, 1000, 30)
+    title_x = title_x_input
+
+    title_y = st.slider("Título Y (px)", -500, 1000, 50)
+    title_y_input = st.number_input("Título Y exacto (px)", -500, 1000, 50)
+    title_y = title_y_input
+
+    subtitle_x = st.slider("Subtítulo X (px)", -500, 1000, 30)
+    subtitle_x_input = st.number_input("Subtítulo X exacto (px)", -500, 1000, 30)
+    subtitle_x = subtitle_x_input
+
+    subtitle_y = st.slider("Subtítulo Y (px)", -500, 1000, 200)
+    subtitle_y_input = st.number_input("Subtítulo Y exacto (px)", -500, 1000, 200)
+    subtitle_y = subtitle_y_input
 
 with st.sidebar.expander("🔳 QR"):
-    qr_size = st.number_input("Tamaño QR (px)", 50, 800, 250)
-    qr_x = st.number_input("QR X (px)", -500, 1000, 50)
-    qr_y = st.number_input("QR Y (px)", -500, 1000, 600)
+    qr_size = st.slider("Tamaño QR (px)", 50, 800, 550)
+    qr_size_input = st.number_input("Tamaño QR exacto (px)", 50, 800, 550)
+    qr_size = qr_size_input
+
+    qr_x = st.slider("QR X (px)", -500, 1000, 30)
+    qr_x_input = st.number_input("QR X exacto (px)", -500, 1000, 30)
+    qr_x = qr_x_input
+
+    qr_y = st.slider("QR Y (px)", -500, 1000, 950)
+    qr_y_input = st.number_input("QR Y exacto (px)", -500, 1000, 950)
+    qr_y = qr_y_input
 
 with st.sidebar.expander("🗺️ Mapa"):
-    map_scale = st.number_input("Escala mapa (%)", 10, 300, 70)
-    map_x = st.number_input("Mapa X (px)", -500, 1000, 400)
-    map_y = st.number_input("Mapa Y (px)", -500, 1000, 150)
+    map_scale = st.slider("Escala mapa (%)", 10, 300, 157)
+    map_scale_input = st.number_input("Escala exacta (%)", 10, 300, 157)
+    map_scale = map_scale_input
+
+    map_x = st.slider("Mapa X (px)", -500, 1000, 600)
+    map_x_input = st.number_input("Mapa X exacto (px)", -500, 1000, 600)
+    map_x = map_x_input
+
+    map_y = st.slider("Mapa Y (px)", -500, 1000, 600)
+    map_y_input = st.number_input("Mapa Y exacto (px)", -500, 1000, 600)
+    map_y = map_y_input
 
 with st.sidebar.expander("Opciones generales"):
     bg_color = st.color_picker("Color de fondo", "#ffffff")
@@ -53,7 +90,7 @@ with st.sidebar.expander("Opciones generales"):
     show_guides = st.checkbox("Mostrar guías", True)
     export_cut_line = st.checkbox("Incluir línea de corte (mitad superior)", True)
     qr_error_correction = st.selectbox("Corrección de error QR",
-                                       ["LOW (7%)","MEDIUM (15%)","QUARTILE (25%)","HIGH (30%)"], index=2)
+                                       ["LOW (7%)","MEDIUM (15%)","QUARTILE (25%)","HIGH (30%)"], index=3)
 
 # --- FUNCIONES ---
 def load_image(file):
@@ -161,3 +198,5 @@ if map_file and (qr_link or qr_file):
         final_img.save(buf_pdf, format="PDF")
         buf_pdf.seek(0)
         st.download_button("📄 Descargar PDF", buf_pdf, f"{title_text}_A4.pdf", "application/pdf")
+else:
+    st.info("Sube mapa y proporciona QR (URL o imagen) para generar el diseño.")
