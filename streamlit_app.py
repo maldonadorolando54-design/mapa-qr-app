@@ -7,8 +7,8 @@ try:
 except Exception:
     qrcode = None
 
-st.set_page_config(page_title="Mapa + QR — Layout inicial listo", layout="centered")
-st.title("🗺️ Mapa + QR — Layout inicial predefinido")
+st.set_page_config(page_title="Mapa + QR — Layout absoluto", layout="centered")
+st.title("🗺️ Mapa + QR + URL + Posiciones absolutas")
 
 if qrcode is None:
     st.error("Instala `qrcode` con `pip install qrcode[pil] Pillow` para usar QR desde URL.")
@@ -28,25 +28,22 @@ subtitle_text = st.text_input("Subtítulo", value="Cong. Brescia Española")
 # --- AJUSTES CON SLIDERS X/Y ---
 with st.sidebar.expander("🗺️ Mapa"):
     map_scale = st.slider("Escala mapa (%)", 10, 300, 157)
-    # Posición inicial a la derecha
-    map_x = st.slider("Mapa X (px)", 0, 1200, 600)
-    map_y = st.slider("Mapa Y (px)", 0, 1200, 150)
+    map_x = st.slider("Mapa X IZQ/DER(px)", 0, 1200, 580)
+    map_y = st.slider("Mapa Y ARRIBA/ABAJO(px)", 0, 1200, 600)
 
 with st.sidebar.expander("🔳 QR"):
-    qr_size = st.slider("Tamaño QR (px)", 50, 800, 250)
-    # Posición inicial abajo a la izquierda
-    qr_x = st.slider("QR X (px)", 0, 1200, 30)
-    qr_y = st.slider("QR Y (px)", 0, 1200, 800)
+    qr_size = st.slider("Tamaño QR (px)", 50, 800, 550)
+    qr_x = st.slider("QR X IZQ/DER(px)", 0, 1200, 30)
+    qr_y = st.slider("QR Y ARRIBA/ABAJO(px)", 0, 1200, 950)
 
 with st.sidebar.expander("📝 Título y Subtítulo"):
-    font_title = st.slider("Tamaño título (px)", 10, 200, 70)
-    font_sub = st.slider("Tamaño subtítulo (px)", 10, 100, 36)
-    spacing_title_sub = st.slider("Espacio título-subtítulo (px)", 0, 100, 10)
-    # Posición inicial arriba a la izquierda
-    title_x = st.slider("Título X (px)", 0, 1200, 80)
-    title_y = st.slider("Título Y (px)", 0, 1200, 50)
-    subtitle_x = st.slider("Subtítulo X (px)", 0, 1200, 80)
-    subtitle_y = st.slider("Subtítulo Y (px)", 0, 1200, 120)
+    font_title = st.slider("Tamaño título (px)", 10, 200, 150)
+    font_sub = st.slider("Tamaño subtítulo (px)", 10, 100, 100)
+    spacing_title_sub = st.slider("Espacio título-subtítulo (px)", 0, 100, 100)
+    title_x = st.slider("Título X IZQ/DER(px)", 0, 1200, 30)
+    title_y = st.slider("Título Y ARRIBA/ABAJO(px)", 0, 1200, 50)
+    subtitle_x = st.slider("Subtítulo IZQ/DER(px)", 0, 1200, 30)
+    subtitle_y = st.slider("Subtítulo ARRIBA/ABAJO(px)", 0, 1200, 200)
 
     # Colores al final del grupo
     title_color = st.color_picker("Color título", "#000000")
